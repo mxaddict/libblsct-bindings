@@ -1,0 +1,37 @@
+name: 'C#: Run unit tests'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'ffi/csharp/**'
+      - '.github/workflows/csharp-unit-tests.yml'
+  pull_request:
+    paths:
+      - 'ffi/csharp/**'
+      - '.github/workflows/csharp-unit-tests.yml'
+
+jobs:
+  csharp-run-unit-tests:
+    strategy:
+      matrix:
+        os: ["ubuntu-24.04", "macos-15"]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          clean: true
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run tests
+        run: |
+          cd ffi/csharp
+          dotnet test tests/NavioBlsct.Tests.csproj
