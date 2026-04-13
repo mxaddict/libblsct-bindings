@@ -35,8 +35,8 @@ public static unsafe class Blsct
 
     public static IntPtr DeriveSubAddress(byte[] viewKey, byte[] spendKey, IntPtr subAddrId)
     {
-        ArgumentNullException.ThrowIfNull(viewKey);
-        ArgumentNullException.ThrowIfNull(spendKey);
+        if (viewKey is null) throw new ArgumentNullException(nameof(viewKey));
+        if (spendKey is null) throw new ArgumentNullException(nameof(spendKey));
 
         if (viewKey.Length != 32)
         {
@@ -70,7 +70,7 @@ public static unsafe class Blsct
 
     public static IntPtr DecodeAddress(string blsctEncAddr)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(blsctEncAddr);
+        if (string.IsNullOrWhiteSpace(blsctEncAddr)) throw new ArgumentException("Value cannot be null or whitespace.", nameof(blsctEncAddr));
 
         var retVal = decode_address(blsctEncAddr);
         try
