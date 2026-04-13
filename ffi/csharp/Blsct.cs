@@ -1,9 +1,9 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace NavioBlsct;
-
-public enum AddressEncoding
+namespace NavioBlsct
+{
+    public enum AddressEncoding
 {
     Bech32 = 0,
     Bech32M = 1,
@@ -126,5 +126,5 @@ public static unsafe class Blsct
     {
         return Marshal.ReadIntPtr(retVal, IntPtr.Size);
     }
-
+    }
 }
