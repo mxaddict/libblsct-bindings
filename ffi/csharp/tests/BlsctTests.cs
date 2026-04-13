@@ -33,14 +33,7 @@ public sealed class BlsctTests
     [InlineData("   ")]
     public void DecodeAddressRejectsEmptyInput(string? input)
     {
-        if (input is null)
-        {
-            Assert.Throws<ArgumentNullException>(() => Blsct.DecodeAddress(input!));
-        }
-        else
-        {
-            Assert.Throws<ArgumentException>(() => Blsct.DecodeAddress(input));
-        }
+        Assert.Throws<ArgumentException>(() => Blsct.DecodeAddress(input!));
     }
 
     [Fact]
