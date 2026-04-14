@@ -104,24 +104,38 @@ hr {
 }
 
 /* -- Sidebar TOC ------------------------------------------------------------- */
-.sidefilter {
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border);
+/* Override default #f1f1f1 backgrounds — requires matching or beating
+   specificity of ".sidenav, .fixed_header, .toc { background: #f1f1f1 }" */
+.sidenav,
+.fixed_header,
+.toc,
+.sidetoc,
+.sidefilter,
+#sidetoggle {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
 }
 
-.sidetoc {
-  background-color: var(--bg-secondary);
-  border-right: 1px solid var(--border);
+.toc-filter {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-primary) !important;
 }
 
-#toc_filter_input {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  border-radius: 4px;
+#toc_filter_input,
+.toc-filter > input {
+  background-color: transparent !important;
+  border: none !important;
+  color: var(--text-primary) !important;
 }
-#toc_filter_input::placeholder {
-  color: var(--text-muted);
+#toc_filter_input::placeholder,
+.toc-filter > input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+.filter-icon,
+.clear-icon {
+  color: var(--text-muted) !important;
 }
 
 .toc .nav > li > a {
