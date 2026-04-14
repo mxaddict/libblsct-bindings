@@ -23,11 +23,20 @@ This runs two phases:
 
 ## Previewing locally
 
+`--serve` requires `Microsoft.AspNetCore.App` runtime. If unavailable, serve `_site/` manually:
+
 ```bash
-docfx docfx.json --serve
+docfx docfx.json
+cd _site && python3 -m http.server 8080
 ```
 
 Then open `http://localhost:8080`.
+
+If `Microsoft.AspNetCore.App` is installed, you can use the built-in server instead:
+
+```bash
+docfx docfx.json --serve
+```
 
 ## Updating
 
