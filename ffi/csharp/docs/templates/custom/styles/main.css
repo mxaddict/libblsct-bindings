@@ -185,12 +185,14 @@ hr {
   color: var(--accent-pink);
   font-weight: 600;
 }
-.sideaffix .contribution a {
-  color: var(--text-muted);
+.sideaffix .contribution a,
+.sideaffix > div.contribution > ul > li > a.contribution-link {
+  color: var(--accent-blue);
   font-size: 12px;
 }
-.sideaffix .contribution a:hover {
-  color: var(--accent-blue);
+.sideaffix .contribution a:hover,
+.sideaffix > div.contribution > ul > li > a.contribution-link:hover {
+  color: var(--accent-pink);
 }
 
 /* -- Main content area ------------------------------------------------------- */
