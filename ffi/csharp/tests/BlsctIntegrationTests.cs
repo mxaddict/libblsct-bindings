@@ -11,10 +11,10 @@ namespace NavioBlsct.Tests
 
         private static bool HasLibblsct => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("LIBBLSCT_SO_PATH"));
 
-        [Fact]
+        [SkippableFact]
         public void GenSubAddrIdReturnsNonZeroHandle()
         {
-            if (!HasLibblsct) return;
+            Skip.If(!HasLibblsct, "LIBBLSCT_SO_PATH not set");
 
             var handle = Blsct.GenSubAddrId(0, 0);
             Assert.NotEqual(IntPtr.Zero, handle);
@@ -22,10 +22,10 @@ namespace NavioBlsct.Tests
             Blsct.FreeObj(handle);
         }
 
-        [Fact]
+        [SkippableFact]
         public void DeriveSubAddressWithValidKeysReturnsNonZeroHandle()
         {
-            if (!HasLibblsct) return;
+            Skip.If(!HasLibblsct, "LIBBLSCT_SO_PATH not set");
 
             var subAddrId = Blsct.GenSubAddrId(0, 0);
             try
@@ -40,10 +40,10 @@ namespace NavioBlsct.Tests
             }
         }
 
-        [Fact]
+        [SkippableFact]
         public void EncodeAddressWithTnvHrpStartsWithPrefix()
         {
-            if (!HasLibblsct) return;
+            Skip.If(!HasLibblsct, "LIBBLSCT_SO_PATH not set");
 
             var subAddrId = Blsct.GenSubAddrId(0, 0);
             try
@@ -65,10 +65,10 @@ namespace NavioBlsct.Tests
             }
         }
 
-        [Fact]
+        [SkippableFact]
         public void EncodeDecodeRoundTrip()
         {
-            if (!HasLibblsct) return;
+            Skip.If(!HasLibblsct, "LIBBLSCT_SO_PATH not set");
 
             var subAddrId = Blsct.GenSubAddrId(0, 0);
             try
@@ -95,10 +95,10 @@ namespace NavioBlsct.Tests
             }
         }
 
-        [Fact]
+        [SkippableFact]
         public void EncodeAddressWithBech32MIsNonEmpty()
         {
-            if (!HasLibblsct) return;
+            Skip.If(!HasLibblsct, "LIBBLSCT_SO_PATH not set");
 
             var subAddrId = Blsct.GenSubAddrId(0, 0);
             try
@@ -125,10 +125,10 @@ namespace NavioBlsct.Tests
         // The HRP is fixed by the native library — HRP switching is not exposed via this API.
         // A separate mainnet HRP test is omitted until the C API supports it.
 
-        [Fact]
+        [SkippableFact]
         public void DecodeAddressThrowsOnInvalidInput()
         {
-            if (!HasLibblsct) return;
+            Skip.If(!HasLibblsct, "LIBBLSCT_SO_PATH not set");
 
             Assert.Throws<InvalidOperationException>(() =>
             {
@@ -136,7 +136,7 @@ namespace NavioBlsct.Tests
             });
         }
 
-        [Fact(Skip = "fixture not yet generated")]
+        [SkippableFact(Skip = "fixture not yet generated")]
         public void FullPipeline_MatchesFixture()
         {
             // Test vectors are loaded from blsct_vectors.json (not yet generated).

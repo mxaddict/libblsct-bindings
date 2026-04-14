@@ -51,7 +51,7 @@ public sealed class BlsctSwigIntegrationTests
 
     private void SkipIfNoLib()
     {
-        if (!HasNativeLib) return;
+        Skip.If(!HasNativeLib, "LIBBLSCT_SO_PATH not set");
         blsct.init();
     }
 
@@ -59,18 +59,16 @@ public sealed class BlsctSwigIntegrationTests
     // Init / Chain
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void Init_DoesNotThrow()
     {
-        if (!HasNativeLib) return;
-        blsct.init();
+        SkipIfNoLib();
     }
 
-    [Fact]
+    [SkippableFact]
     public void SetAndGetChain_RoundTrips()
     {
-        if (!HasNativeLib) return;
-        blsct.init();
+        SkipIfNoLib();
 
         var chains = new[] { BlsctChain.Mainnet, BlsctChain.Testnet, BlsctChain.Signet, BlsctChain.Regtest };
         foreach (var chain in chains)
@@ -87,11 +85,10 @@ public sealed class BlsctSwigIntegrationTests
     // Scalar
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void Scalar_GenAndToUint64_RoundTrips()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_scalar(12345);
         var val = AssertSuccess(rv);
@@ -100,11 +97,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(val);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Scalar_Random_ProducesDifferentValues()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv1 = blsct.gen_random_scalar();
         var rv2 = blsct.gen_random_scalar();
@@ -119,11 +115,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rv2.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Scalar_Equals()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv1 = blsct.gen_scalar(1);
         var rv2 = blsct.gen_scalar(2);
@@ -137,11 +132,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rv2.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Scalar_ToString()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_scalar(42);
         var scalar = blsct.cast_to_scalar(AssertSuccess(rv));
@@ -151,11 +145,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rv.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Scalar_ToPubKey()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_scalar(1);
         var scalar = blsct.cast_to_scalar(AssertSuccess(rv));
@@ -164,11 +157,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rv.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Scalar_SerializeDeserialize_RoundTrips()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_random_scalar();
         var scalar = blsct.cast_to_scalar(AssertSuccess(rv));
@@ -188,11 +180,10 @@ public sealed class BlsctSwigIntegrationTests
     // Point
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void Point_Base()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_base_point();
         var p = blsct.cast_to_point(AssertSuccess(rv));
@@ -201,11 +192,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rv.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Point_Random_ProducesDifferentValues()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv1 = blsct.gen_random_point();
         var rv2 = blsct.gen_random_point();
@@ -217,11 +207,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rv2.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Point_FromScalar()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvS = blsct.gen_scalar(1);
         var scalar = blsct.cast_to_scalar(AssertSuccess(rvS));
@@ -236,11 +225,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvBase.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Point_IsValid()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_random_point();
         var p = blsct.cast_to_point(AssertSuccess(rv));
@@ -248,11 +236,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rv.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Point_ScalarMultiply()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvP = blsct.gen_random_point();
         var rvS = blsct.gen_random_scalar();
@@ -267,11 +254,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvS.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Point_ToString()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_base_point();
         var p = blsct.cast_to_point(AssertSuccess(rv));
@@ -281,11 +267,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rv.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Point_SerializeDeserialize_RoundTrips()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_random_point();
         var p = blsct.cast_to_point(AssertSuccess(rv));
@@ -304,11 +289,10 @@ public sealed class BlsctSwigIntegrationTests
     // Public Key
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void PublicKey_Random()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_random_public_key();
         var val = AssertSuccess(rv);
@@ -316,11 +300,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(val);
     }
 
-    [Fact]
+    [SkippableFact]
     public void PublicKey_PointToPublicKeyAndBack()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvP = blsct.gen_random_point();
         var point = blsct.cast_to_point(AssertSuccess(rvP));
@@ -335,11 +318,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvP.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void PublicKey_SerializeDeserialize_RoundTrips()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvP = blsct.gen_random_point();
         var point = blsct.cast_to_point(AssertSuccess(rvP));
@@ -358,11 +340,10 @@ public sealed class BlsctSwigIntegrationTests
     // Key Derivation
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void KeyDerivation_FullChain()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         // seed -> childKey
         var rvSeed = blsct.gen_scalar(12345);
@@ -398,11 +379,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvSeed.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void KeyDerivation_IsDeterministic()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv1 = blsct.gen_scalar(12345);
         var rv2 = blsct.gen_scalar(12345);
@@ -421,11 +401,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rv2.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void CalcPrivSpendingKey()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvSeed = blsct.gen_scalar(12345);
         var seed = blsct.cast_to_scalar(AssertSuccess(rvSeed));
@@ -448,11 +427,10 @@ public sealed class BlsctSwigIntegrationTests
     // Sub-Address ID
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void SubAddrId_Generate()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var id = blsct.gen_sub_addr_id(1, 2);
         Assert.NotNull(id);
@@ -460,11 +438,10 @@ public sealed class BlsctSwigIntegrationTests
         Assert.Equal(2UL, blsct.get_sub_addr_id_address(id));
     }
 
-    [Fact]
+    [SkippableFact]
     public void SubAddrId_SerializeDeserialize_RoundTrips()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var id = blsct.gen_sub_addr_id(1, 2);
         var hex = blsct.serialize_sub_addr_id(id);
@@ -480,11 +457,10 @@ public sealed class BlsctSwigIntegrationTests
     // Sub-Address
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void SubAddr_DeriveAndConvert()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvSeed = blsct.gen_scalar(12345);
         var seed = blsct.cast_to_scalar(AssertSuccess(rvSeed));
@@ -504,11 +480,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvSeed.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void SubAddr_SerializeDeserialize_RoundTrips()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvSeed = blsct.gen_scalar(12345);
         var seed = blsct.cast_to_scalar(AssertSuccess(rvSeed));
@@ -533,11 +508,10 @@ public sealed class BlsctSwigIntegrationTests
     // Double Public Key
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void DoublePubKey_Generate()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv1 = blsct.gen_random_public_key();
         var rv2 = blsct.gen_random_public_key();
@@ -552,11 +526,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvDpk.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void DoublePubKey_FromKeysAcctAddr()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvSeed = blsct.gen_scalar(12345);
         var seed = blsct.cast_to_scalar(AssertSuccess(rvSeed));
@@ -571,11 +544,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvSeed.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void DoublePubKey_DpkToSubAddr()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv1 = blsct.gen_random_public_key();
         var rv2 = blsct.gen_random_public_key();
@@ -593,11 +565,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvSa.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void DoublePubKey_SerializeDeserialize_RoundTrips()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv1 = blsct.gen_random_public_key();
         var rv2 = blsct.gen_random_public_key();
@@ -623,11 +594,10 @@ public sealed class BlsctSwigIntegrationTests
     // Address encode/decode
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void Address_EncodeAndDecode_RoundTrips()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         blsct.set_blsct_chain(BlsctChain.Testnet);
 
@@ -669,11 +639,10 @@ public sealed class BlsctSwigIntegrationTests
     // Key ID (Hash ID)
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void KeyId_CalcAndSerialize()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvSeed = blsct.gen_scalar(12345);
         var seed = blsct.cast_to_scalar(AssertSuccess(rvSeed));
@@ -701,11 +670,10 @@ public sealed class BlsctSwigIntegrationTests
     // Signature
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void Signature_SignAndVerify()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvKey = blsct.gen_random_scalar();
         var privKey = blsct.cast_to_scalar(AssertSuccess(rvKey));
@@ -720,11 +688,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvKey.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Signature_SerializeDeserialize_RoundTrips()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvKey = blsct.gen_random_scalar();
         var privKey = blsct.cast_to_scalar(AssertSuccess(rvKey));
@@ -745,11 +712,10 @@ public sealed class BlsctSwigIntegrationTests
     // Token ID
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void TokenId_Default()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_default_token_id();
         var val = AssertSuccess(rv);
@@ -759,11 +725,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(val);
     }
 
-    [Fact]
+    [SkippableFact]
     public void TokenId_FromToken()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_token_id(12345);
         var tid = blsct.cast_to_token_id(AssertSuccess(rv));
@@ -771,11 +736,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rv.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void TokenId_FromTokenAndSubid()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_token_id_with_token_and_subid(123, 456);
         var tid = blsct.cast_to_token_id(AssertSuccess(rv));
@@ -784,11 +748,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rv.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void TokenId_SerializeDeserialize_RoundTrips()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rv = blsct.gen_token_id(777);
         var tid = blsct.cast_to_token_id(AssertSuccess(rv));
@@ -807,11 +770,10 @@ public sealed class BlsctSwigIntegrationTests
     // Out Point
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void OutPoint_GenerateAndSerialize()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var ctxIdHex = new string('a', 64); // 32 bytes
         var rv = blsct.gen_out_point(ctxIdHex);
@@ -832,11 +794,10 @@ public sealed class BlsctSwigIntegrationTests
     // ViewTag & Nonce
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void ViewTag_Calc()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvSeed = blsct.gen_scalar(12345);
         var seed = blsct.cast_to_scalar(AssertSuccess(rvSeed));
@@ -853,11 +814,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvSeed.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void CalcNonce()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvSeed = blsct.gen_scalar(12345);
         var seed = blsct.cast_to_scalar(AssertSuccess(rvSeed));
@@ -877,11 +837,10 @@ public sealed class BlsctSwigIntegrationTests
     // Range Proof
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void RangeProof_BuildAndVerify()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvNonce = blsct.gen_random_point();
         var nonce = blsct.cast_to_point(AssertSuccess(rvNonce));
@@ -909,11 +868,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rpVal);
     }
 
-    [Fact]
+    [SkippableFact]
     public void RangeProof_Accessors()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvNonce = blsct.gen_random_point();
         var nonce = blsct.cast_to_point(AssertSuccess(rvNonce));
@@ -946,11 +904,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rpVal);
     }
 
-    [Fact]
+    [SkippableFact]
     public void RangeProof_SerializeDeserialize_RoundTrips()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvNonce = blsct.gen_random_point();
         var nonce = blsct.cast_to_point(AssertSuccess(rvNonce));
@@ -983,11 +940,10 @@ public sealed class BlsctSwigIntegrationTests
     // Amount Recovery
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void AmountRecovery_RecoverAmount()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvNonce = blsct.gen_base_point();
         var nonce = blsct.cast_to_point(AssertSuccess(rvNonce));
@@ -1034,11 +990,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rpVal);
     }
 
-    [Fact]
+    [SkippableFact]
     public void AmountRecovery_WithNonDefaultTokenId()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvNonce = blsct.gen_base_point();
         var nonce = blsct.cast_to_point(AssertSuccess(rvNonce));
@@ -1074,11 +1029,10 @@ public sealed class BlsctSwigIntegrationTests
     // String Map Helpers
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void StringMap_CreateAddGetDelete()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var map = blsct.create_string_map();
         Assert.NotNull(map);
@@ -1099,11 +1053,10 @@ public sealed class BlsctSwigIntegrationTests
     // Token Info
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void TokenInfo_BuildAndGetters()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvPk = blsct.gen_random_public_key();
         var pk = blsct.cast_to_pub_key(AssertSuccess(rvPk));
@@ -1128,11 +1081,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvPk.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void TokenInfo_SerializeDeserialize_RoundTrips()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvPk = blsct.gen_random_public_key();
         var pk = blsct.cast_to_pub_key(AssertSuccess(rvPk));
@@ -1160,11 +1112,10 @@ public sealed class BlsctSwigIntegrationTests
     // Collection Token Hash & Key Derivation
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void CollectionToken_CalcHashAndDeriveKey()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var metadata = blsct.create_string_map();
         blsct.add_to_string_map(metadata, "symbol", "TOK");
@@ -1193,11 +1144,10 @@ public sealed class BlsctSwigIntegrationTests
     // TxIn build & getters
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void TxIn_BuildAndGetters()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvGamma = blsct.gen_scalar(456);
         var gamma = blsct.cast_to_scalar(AssertSuccess(rvGamma));
@@ -1233,11 +1183,10 @@ public sealed class BlsctSwigIntegrationTests
     // TxOut build & getters
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void TxOut_BuildAndGetters()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         // Build a destination sub-address
         var rvSeed = blsct.gen_scalar(12345);
@@ -1277,11 +1226,10 @@ public sealed class BlsctSwigIntegrationTests
     // Unsigned Transaction build/sign
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void UnsignedTx_BuildAndSign()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         // Build TxIn
         var rvGamma = blsct.gen_scalar(100);
@@ -1359,11 +1307,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvUnsTx2.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void UnsignedInput_SerializeDeserialize()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvGamma = blsct.gen_scalar(100);
         var gamma = blsct.cast_to_scalar(AssertSuccess(rvGamma));
@@ -1399,11 +1346,10 @@ public sealed class BlsctSwigIntegrationTests
     // Signed Transaction (CTx) & CTx accessors
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void CTx_BuildAndAccessors()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         // Use the unsigned tx flow to get a signed tx
         var signedHex = BuildSignedTxHex(new string('1', 64), 10000);
@@ -1433,11 +1379,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.delete_ctx(ctxVal);
     }
 
-    [Fact]
+    [SkippableFact]
     public void CTxIn_Accessors()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var signedHex = BuildSignedTxHex(new string('2', 64), 10000);
         var rvCtx = blsct.deserialize_ctx(signedHex);
@@ -1455,11 +1400,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.delete_ctx(ctxVal);
     }
 
-    [Fact]
+    [SkippableFact]
     public void CTxOut_Accessors()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var signedHex = BuildSignedTxHex(new string('3', 64), 10000);
         var rvCtx = blsct.deserialize_ctx(signedHex);
@@ -1483,11 +1427,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.delete_ctx(ctxVal);
     }
 
-    [Fact]
+    [SkippableFact]
     public void CTxId_SerializeDeserialize()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var signedHex = BuildSignedTxHex(new string('4', 64), 10000);
         var rvCtx = blsct.deserialize_ctx(signedHex);
@@ -1511,11 +1454,10 @@ public sealed class BlsctSwigIntegrationTests
     // Transaction Aggregation
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void TxAggregation_MergesTwoTransactions()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var hex1 = BuildSignedTxHex(new string('5', 64), 10000);
         var hex2 = BuildSignedTxHex(new string('6', 64), 20000);
@@ -1546,11 +1488,10 @@ public sealed class BlsctSwigIntegrationTests
     // Vector Predicates
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void VectorPredicate_CreateTokenPredicate()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvPk = blsct.gen_random_public_key();
         var pk = blsct.cast_to_pub_key(AssertSuccess(rvPk));
@@ -1581,11 +1522,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(rvPred2.value);
     }
 
-    [Fact]
+    [SkippableFact]
     public void VectorPredicate_MintTokenPredicate()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvPk = blsct.gen_random_public_key();
         var pk = blsct.cast_to_pub_key(AssertSuccess(rvPk));
@@ -1604,11 +1544,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(predVal);
     }
 
-    [Fact]
+    [SkippableFact]
     public void VectorPredicate_MintNftPredicate()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvPk = blsct.gen_random_public_key();
         var pk = blsct.cast_to_pub_key(AssertSuccess(rvPk));
@@ -1639,11 +1578,10 @@ public sealed class BlsctSwigIntegrationTests
     // Script serialization
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void Script_SerializeDeserialize()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         // Get a script from a CTx output
         var signedHex = BuildSignedTxHex(new string('7', 64), 10000);
@@ -1668,11 +1606,10 @@ public sealed class BlsctSwigIntegrationTests
     // Misc helpers
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void HexToMallocedBuf_And_BufToHex()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var hex = "deadbeef";
         var buf = blsct.hex_to_malloced_buf(hex);
@@ -1682,11 +1619,10 @@ public sealed class BlsctSwigIntegrationTests
         Assert.Equal(hex, hexBack);
     }
 
-    [Fact]
+    [SkippableFact]
     public void Uint64Vec_CreateAddDelete()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var vec = blsct.create_uint64_vec();
         Assert.NotNull(vec);
@@ -1697,11 +1633,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.delete_uint64_vec(vec);
     }
 
-    [Fact]
+    [SkippableFact]
     public void CastHelpers_ReturnNonNull()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         // Test cast helpers via real objects
         var rv = blsct.gen_random_scalar();
@@ -1713,11 +1648,10 @@ public sealed class BlsctSwigIntegrationTests
         blsct.free_obj(val);
     }
 
-    [Fact]
+    [SkippableFact]
     public void CastToSizeT()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         Assert.Equal(42U, blsct.cast_to_size_t(42));
         Assert.Equal(0U, blsct.cast_to_size_t(0));
@@ -1727,11 +1661,10 @@ public sealed class BlsctSwigIntegrationTests
     // CTx equality helpers
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void CTx_EqualityHelpers()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var signedHex = BuildSignedTxHex(new string('8', 64), 10000);
         var rvCtx = blsct.deserialize_ctx(signedHex);
@@ -1762,11 +1695,10 @@ public sealed class BlsctSwigIntegrationTests
     // Deterministic golden values (matching TS crossBuildDeterminism tests)
     // =========================================================================
 
-    [Fact]
+    [SkippableFact]
     public void Deterministic_GoldenValues()
     {
         SkipIfNoLib();
-        if (!HasNativeLib) return;
 
         var rvSeed = blsct.gen_scalar(12345);
         var seed = blsct.cast_to_scalar(AssertSuccess(rvSeed));
