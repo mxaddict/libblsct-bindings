@@ -9,6 +9,10 @@ on:
       - 'ffi/python/docs/source/**'
       - 'ffi/python/blsct/**'
 
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
 permissions:
   contents: write
 

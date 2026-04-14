@@ -9,6 +9,10 @@ on:
       - 'ffi/ts/docs/**'
       - '.github/workflows/ts-doc-website.yml'
 
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
 permissions:
   contents: write
 

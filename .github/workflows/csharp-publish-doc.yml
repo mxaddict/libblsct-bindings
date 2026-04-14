@@ -10,6 +10,10 @@ on:
       - 'ffi/csharp/docs/**'
       - '.github/workflows/csharp-publish-doc.yml'
 
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
