@@ -17,6 +17,7 @@ docfx docfx.json
 ```
 
 This runs two phases:
+
 1. **Metadata** — reads `NavioBlsct.csproj` and emits YAML into `api/`.
 2. **Build** — combines YAML + Markdown articles into `_site/`.
 
@@ -30,5 +31,7 @@ Then open `http://localhost:8080`.
 
 ## Updating
 
-- To add a new article, create a `.md` file in `articles/` and add it to `articles/toc.yml`.
-- API reference is regenerated automatically from XML doc comments in `Blsct.cs`.
+- To add a new article, create a `.md` file in `articles/` and add it to
+  `articles/toc.yml`.
+- API reference is regenerated automatically from XML doc comments in
+  `Blsct.cs`.
