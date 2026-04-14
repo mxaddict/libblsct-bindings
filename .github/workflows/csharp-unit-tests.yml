@@ -74,6 +74,7 @@ jobs:
 
           # Symlink so SWIG #include "../navio-core/..." resolves from ffi/ts/swig/
           ln -sf "$GITHUB_WORKSPACE/navio-core-build" "$GITHUB_WORKSPACE/ffi/ts/navio-core"
+          ln -sf "$GITHUB_WORKSPACE/navio-core-build" /tmp/navio-core
 
           # Generate SWIG C# wrapper
           mkdir -p /tmp/swig-out
