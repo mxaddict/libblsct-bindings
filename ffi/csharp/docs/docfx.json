@@ -30,7 +30,7 @@
       "_appFooter": "NavioBlsct — C# Bindings for libblsct. Copyright The Navio Developers.",
       "_enableSearch": true
     },
-    "template": ["default"],
+    "template": ["default", "templates/custom"],
     "postProcessors": [],
     "markdownEngineName": "markdig",
     "noLangKeyword": false,

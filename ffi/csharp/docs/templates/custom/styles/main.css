@@ -1,0 +1,11 @@
+/* Always expand TOC sub-items on desktop — default template hides them
+   until the JS expand-stub is clicked (.in class toggled on the li). */
+@media (min-width: 769px) {
+  .toc .nav > li > ul {
+    display: block;
+  }
+
+  .expand-stub {
+    display: none;
+  }
+}
