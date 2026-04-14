@@ -1,0 +1,532 @@
+/* =============================================================================
+   NavioBlsct DocFX Theme
+   Brand colors from nav.io:
+     Magenta:  #ec1ec6
+     Blue:     #1d8ff9
+     Gradient: linear-gradient(135deg, #ec1ec6, #1d8ff9)
+   ============================================================================= */
+
+/* -- Variables (via properties for easy tweaking) ---------------------------- */
+:root {
+  --bg-primary:    #0a0d12;
+  --bg-secondary:  #0f1421;
+  --bg-card:       #141b2b;
+  --bg-hover:      #1a2235;
+  --border:        #1e2d45;
+  --border-subtle: #162038;
+  --text-primary:  #e8edf5;
+  --text-secondary:#8899b4;
+  --text-muted:    #4d607a;
+  --accent-pink:   #ec1ec6;
+  --accent-blue:   #1d8ff9;
+  --gradient:      linear-gradient(135deg, #ec1ec6 0%, #1d8ff9 100%);
+  --code-bg:       #0d1117;
+}
+
+/* -- Base -------------------------------------------------------------------- */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+a {
+  color: var(--accent-blue);
+  text-decoration: none;
+}
+a:hover,
+a:focus {
+  color: var(--accent-pink);
+  text-decoration: none;
+}
+
+hr {
+  border-color: var(--border);
+}
+
+/* -- Top navbar -------------------------------------------------------------- */
+.navbar.navbar-inverse {
+  background: var(--gradient);
+  border: none;
+  box-shadow: 0 2px 12px rgba(29, 143, 249, 0.25);
+}
+
+.navbar.navbar-inverse .navbar-brand,
+.navbar.navbar-inverse .navbar-brand:hover,
+.navbar.navbar-inverse .navbar-brand:focus {
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+#logo {
+  height: 32px;
+  width: auto;
+  vertical-align: middle;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  padding-top: 0;
+  padding-bottom: 0;
+  height: 50px;
+}
+
+.navbar.navbar-inverse .navbar-nav > li > a,
+.navbar.navbar-inverse .navbar-nav > li > a:hover,
+.navbar.navbar-inverse .navbar-nav > li > a:focus {
+  color: #fff;
+}
+
+.navbar.navbar-inverse .navbar-toggle {
+  border-color: rgba(255,255,255,0.4);
+}
+.navbar.navbar-inverse .navbar-toggle .icon-bar {
+  background-color: #fff;
+}
+
+.navbar.navbar-inverse .form-control {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+}
+.navbar.navbar-inverse .form-control::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+
+/* -- Subnav / breadcrumb ----------------------------------------------------- */
+.subnav.navbar.navbar-default {
+  background-color: var(--bg-secondary);
+  border-top: none;
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.breadcrumb {
+  background: transparent;
+  margin-bottom: 0;
+}
+.breadcrumb > li + li::before,
+.breadcrumb > li a {
+  color: var(--text-secondary);
+}
+.breadcrumb > .active {
+  color: var(--text-primary);
+}
+
+/* -- Sidebar TOC ------------------------------------------------------------- */
+/* Override default #f1f1f1 backgrounds — requires matching or beating
+   specificity of ".sidenav, .fixed_header, .toc { background: #f1f1f1 }" */
+.sidenav,
+.fixed_header,
+.toc,
+.sidetoc,
+.sidefilter,
+#sidetoggle {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
+}
+
+.toc-filter {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-primary) !important;
+}
+
+#toc_filter_input,
+.toc-filter > input {
+  background-color: transparent !important;
+  border: none !important;
+  color: var(--text-primary) !important;
+}
+#toc_filter_input::placeholder,
+.toc-filter > input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+.filter-icon,
+.clear-icon {
+  color: var(--text-muted) !important;
+}
+
+.toc .nav > li > a {
+  color: var(--text-secondary);
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.15s;
+}
+.toc .nav > li > a:hover,
+.toc .nav > li > a:focus {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.toc .nav > li.active > a,
+.toc .nav > li.active > a:hover,
+.toc .nav > li.active > a:focus {
+  background: linear-gradient(135deg, rgba(236,30,198,0.15), rgba(29,143,249,0.15));
+  color: var(--accent-blue);
+  border-left: 2px solid var(--accent-pink);
+  font-weight: 600;
+}
+
+/* Always show nested TOC items on desktop */
+@media (min-width: 769px) {
+  .toc .nav > li > ul {
+    display: block;
+  }
+  .expand-stub {
+    display: none;
+  }
+}
+
+.toc .level2 {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* -- Right affix sidebar ----------------------------------------------------- */
+#affix {
+  border-left: 1px solid var(--border);
+  padding-left: 12px;
+}
+#affix h5 {
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+#affix .nav > li > a {
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 3px 0;
+}
+#affix .nav > li > a:hover {
+  color: var(--accent-blue);
+  background: transparent;
+}
+#affix .nav > li.active > a {
+  color: var(--accent-pink);
+  font-weight: 600;
+}
+.sideaffix .contribution a,
+.sideaffix > div.contribution > ul > li > a.contribution-link {
+  color: var(--accent-blue);
+  font-size: 12px;
+}
+.sideaffix .contribution a:hover,
+.sideaffix > div.contribution > ul > li > a.contribution-link:hover {
+  color: var(--accent-pink);
+}
+
+/* -- Main content area ------------------------------------------------------- */
+.body-content {
+  background: transparent;
+}
+
+article.content.wrap {
+  color: var(--text-primary);
+}
+
+/* -- Headings ---------------------------------------------------------------- */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+h1 {
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2rem;
+  font-weight: 700;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+h2 {
+  font-size: 1.4rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 6px;
+  margin-top: 32px;
+  margin-bottom: 16px;
+}
+
+h3 {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  margin-top: 24px;
+}
+
+/* -- Code blocks ------------------------------------------------------------- */
+pre {
+  background-color: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  padding: 16px;
+}
+
+code {
+  background-color: rgba(29, 143, 249, 0.1);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  color: var(--accent-blue);
+  padding: 2px 5px;
+  font-size: 0.9em;
+}
+
+pre code {
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  padding: 0;
+}
+
+/* -- Tables ------------------------------------------------------------------ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+table thead th {
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border);
+  padding: 10px 14px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+table tbody tr {
+  border-bottom: 1px solid var(--border-subtle);
+}
+table tbody tr:hover {
+  background-color: var(--bg-hover);
+}
+table tbody td {
+  padding: 10px 14px;
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+/* -- API reference docs ------------------------------------------------------ */
+.inheritance,
+.implements {
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.xref {
+  color: var(--accent-blue);
+}
+.xref:hover {
+  color: var(--accent-pink);
+}
+
+/* Member declarations */
+h4.declaration {
+  background-color: var(--bg-card);
+  border-left: 3px solid var(--accent-pink);
+  border-radius: 0 4px 4px 0;
+  padding: 8px 14px;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin-top: 20px;
+}
+
+/* Method signature highlight */
+.codewrapper {
+  background-color: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.codewrapper pre {
+  border: none;
+  margin-bottom: 0;
+}
+
+/* -- Alerts / callouts ------------------------------------------------------- */
+.NOTE,
+.TIP,
+.IMPORTANT,
+.WARNING,
+.CAUTION {
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 16px 0;
+  border-left: 4px solid;
+}
+.NOTE    { border-color: var(--accent-blue);  background: rgba(29,143,249,0.08); }
+.TIP     { border-color: #2ea043;             background: rgba(46,160,67,0.08); }
+.IMPORTANT { border-color: var(--accent-pink); background: rgba(236,30,198,0.08); }
+.WARNING { border-color: #d29922;             background: rgba(210,153,34,0.08); }
+.CAUTION { border-color: #f85149;             background: rgba(248,81,73,0.08); }
+
+/* -- Footer ------------------------------------------------------------------ */
+.grad-bottom {
+  background: linear-gradient(to bottom, transparent, var(--bg-primary));
+  height: 24px;
+}
+
+.footer {
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 16px 0;
+}
+.footer a {
+  color: var(--text-secondary);
+}
+.footer a:hover {
+  color: var(--accent-blue);
+}
+
+/* -- Pagination -------------------------------------------------------------- */
+.pagination > li > a,
+.pagination > li > span {
+  background-color: var(--bg-card);
+  border-color: var(--border);
+  color: var(--accent-blue);
+}
+.pagination > li > a:hover,
+.pagination > li > a:focus,
+.pagination > li > span:hover,
+.pagination > li > span:focus {
+  background-color: var(--bg-hover);
+  border-color: var(--border);
+  color: var(--accent-pink);
+}
+.pagination > .active > a,
+.pagination > .active > a:hover,
+.pagination > .active > a:focus,
+.pagination > .active > span {
+  background: var(--gradient);
+  border-color: transparent;
+  color: #fff;
+}
+.pagination > .disabled > a,
+.pagination > .disabled > a:hover,
+.pagination > .disabled > a:focus,
+.pagination > .disabled > span {
+  background-color: var(--bg-secondary);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+/* -- Search results ---------------------------------------------------------- */
+#search-results .search-list {
+  color: var(--text-secondary);
+}
+.sr-items .sr-item a {
+  color: var(--accent-blue);
+}
+.sr-items .sr-item .item-summary {
+  color: var(--text-secondary);
+}
+
+/* -- Syntax highlighting (override light GitHub theme in vendor CSS) ----------
+   Token colors follow GitHub Dark Dimmed palette.                             */
+.hljs {
+  color: #adbac7;
+  background: var(--code-bg);
+}
+/* keywords: if, return, using, public, static … */
+.hljs-doctag,
+.hljs-keyword,
+.hljs-meta .hljs-keyword,
+.hljs-template-tag,
+.hljs-template-variable,
+.hljs-type,
+.hljs-variable.language_ {
+  color: #f47067;
+}
+/* class names, function names */
+.hljs-title,
+.hljs-title.class_,
+.hljs-title.class_.inherited__,
+.hljs-title.function_ {
+  color: #dcbdfb;
+}
+/* attributes, numbers, operators, variables */
+.hljs-attr,
+.hljs-attribute,
+.hljs-literal,
+.hljs-meta,
+.hljs-number,
+.hljs-operator,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-id,
+.hljs-variable {
+  color: #6cb6ff;
+}
+/* strings, regexes */
+.hljs-meta .hljs-string,
+.hljs-regexp,
+.hljs-string {
+  color: #96d0ff;
+}
+/* built-ins, symbols */
+.hljs-built_in,
+.hljs-symbol {
+  color: #f69d50;
+}
+/* comments */
+.hljs-code,
+.hljs-comment,
+.hljs-formula {
+  color: #768390;
+  font-style: italic;
+}
+/* HTML/XML tags, selectors */
+.hljs-name,
+.hljs-quote,
+.hljs-selector-pseudo,
+.hljs-selector-tag {
+  color: #8ddb8c;
+}
+/* substitution */
+.hljs-subst {
+  color: #adbac7;
+}
+/* section headings (Markdown) */
+.hljs-section {
+  color: #6cb6ff;
+  font-weight: bold;
+}
+/* bold / emphasis */
+.hljs-strong { color: #adbac7; font-weight: bold; }
+.hljs-emphasis { color: #adbac7; font-style: italic; }
+/* bullet points */
+.hljs-bullet { color: #f69d50; }
+/* deletion / addition (diff) */
+.hljs-deletion  { color: #f47067; background: rgba(244,112,103,0.12); }
+.hljs-addition  { color: #8ddb8c; background: rgba(141,219,140,0.12); }
+
+/* -- Scrollbar (WebKit) ------------------------------------------------------ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

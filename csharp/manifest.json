@@ -1,0 +1,594 @@
+{
+  "source_base_path": "/home/runner/work/libblsct-bindings/libblsct-bindings/ffi/csharp/docs",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      }
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "README.md",
+      "output": {
+        ".html": {
+          "relative_path": "README.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.AddressEncoding.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.AddressEncoding.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.AddressEncoding",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.BlsctAmountsRetVal.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.BlsctAmountsRetVal.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.BlsctAmountsRetVal",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.BlsctBoolRetVal.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.BlsctBoolRetVal.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.BlsctBoolRetVal",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.BlsctCTxRetVal.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.BlsctCTxRetVal.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.BlsctCTxRetVal",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.BlsctChain.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.BlsctChain.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.BlsctChain",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.BlsctPredicateType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.BlsctPredicateType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.BlsctPredicateType",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.BlsctRetVal.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.BlsctRetVal.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.BlsctRetVal",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.BlsctTokenType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.BlsctTokenType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.BlsctTokenType",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctAmountRecoveryReq.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctAmountRecoveryReq.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctAmountRecoveryReq",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctCTxId.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctCTxId.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctCTxId",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctDoublePubKey.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctDoublePubKey.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctDoublePubKey",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctKeyId.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctKeyId.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctKeyId",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctOutPoint.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctOutPoint.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctOutPoint",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctPoint.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctPoint.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctPoint",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctPubKey.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctPubKey.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctPubKey",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctRangeProof.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctRangeProof.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctRangeProof",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctScalar.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctScalar.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctScalar",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctScript.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctScript.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctScript",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctSignature.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctSignature.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctSignature",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctSubAddr.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctSubAddr.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctSubAddr",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctSubAddrId.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctSubAddrId.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctSubAddrId",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctTokenId.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctTokenId.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctTokenId",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctTxIn.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctTxIn.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctTxIn",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctTxOut.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctTxOut.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctTxOut",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctUint256.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctUint256.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctUint256",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctVectorPredicate.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_BlsctVectorPredicate.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_BlsctVectorPredicate",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_CScript.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_CScript.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_CScript",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_CTxIn.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_CTxIn.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_CTxIn",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_CTxOut.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_CTxOut.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_CTxOut",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_unsigned_char.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_unsigned_char.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_unsigned_char",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.SWIGTYPE_p_void.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.SWIGTYPE_p_void.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.SWIGTYPE_p_void",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.TxOutputType.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.TxOutputType.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.TxOutputType",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.blsct.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.blsct.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct.blsct",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NavioBlsct.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NavioBlsct.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NavioBlsct",
+      "Summary": null
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/installation.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/installation.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/memory-management.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/memory-management.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "articles/return-value-layout.md",
+      "output": {
+        ".html": {
+          "relative_path": "articles/return-value-layout.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "articles/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "articles/toc.html"
+        },
+        ".json": {
+          "relative_path": "articles/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Resource",
+      "source_relative_path": "logo.svg",
+      "output": {
+        "resource": {
+          "relative_path": "logo.svg"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}
