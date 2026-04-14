@@ -281,6 +281,7 @@ This demonstrated the importance of:
 Uses P/Invoke (`DllImport`) against the native `blsct` shared library — no SWIG,
 no code generation.
 
+- `blsct.i` — shared FFI contract; keep it aligned with TS/Python SWIG files
 - `Blsct.cs` — single file, `static unsafe class Blsct` + `AddressEncoding` enum
 - All public methods validate inputs before the P/Invoke call and throw typed
   .NET exceptions

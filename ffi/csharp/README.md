@@ -1,8 +1,8 @@
 # NavioBlsct — C# Bindings for libblsct
 
 P/Invoke bindings for the [libblsct](https://github.com/nav-io/navio-core) C
-library. Exposes BLSCT sub-address derivation and address encoding/decoding to
-.NET.
+library, backed by the shared SWIG contract in `blsct.i`. Exposes BLSCT
+sub-address derivation and address encoding/decoding to .NET.
 
 ## Requirements
 
@@ -121,3 +121,8 @@ All types live in `NavioBlsct`:
 
 - `Blsct` — static class with all public methods
 - `AddressEncoding` — enum (`Bech32 = 0`, `Bech32M = 1`)
+
+## Shared FFI contract
+
+`ffi/csharp/blsct.i` mirrors the SWIG contract used by the TypeScript and
+Python bindings. Keep the exported signatures in sync across all three files.

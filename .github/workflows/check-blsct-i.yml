@@ -7,10 +7,12 @@ on:
       - main
     paths:
       - 'ffi/python/blsct/blsct.i'
+      - 'ffi/csharp/blsct.i'
       - 'ffi/ts/swig/blsct.i'
   pull_request:
     paths:
       - 'ffi/python/blsct/blsct.i'
+      - 'ffi/csharp/blsct.i'
       - 'ffi/ts/swig/blsct.i'
 
 jobs:
@@ -25,4 +27,3 @@ jobs:
       - name: Run consistency check
         run: |
           ./script/blsct-i-consistency.sh 
-

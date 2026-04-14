@@ -14,4 +14,8 @@
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="blsct.i" Pack="true" PackagePath="swig/" />
+  </ItemGroup>
 </Project>

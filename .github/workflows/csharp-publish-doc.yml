@@ -7,6 +7,7 @@ on:
       - main
     paths:
       - 'ffi/csharp/Blsct.cs'
+      - 'ffi/csharp/blsct.i'
       - 'ffi/csharp/docs/**'
       - '.github/workflows/csharp-publish-doc.yml'
 
