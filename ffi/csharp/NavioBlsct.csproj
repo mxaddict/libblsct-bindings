@@ -8,6 +8,7 @@
     <RootNamespace>NavioBlsct</RootNamespace>
     <PackageId>NavioBlsct</PackageId>
     <Version>0.1.0</Version>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

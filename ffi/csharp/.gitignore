@@ -3,3 +3,9 @@
 **/bin/
 **/obj/
 **/TestResults/
+
+# DocFX build output
+docs/_site/
+docs/api/*.yml
+docs/api/*.json
+!docs/api/.gitkeep

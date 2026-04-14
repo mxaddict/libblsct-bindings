@@ -1,0 +1,12 @@
+{
+  "NavioBlsct": "NavioBlsct.yml",
+  "NavioBlsct.AddressEncoding": "NavioBlsct.AddressEncoding.yml",
+  "NavioBlsct.AddressEncoding.Bech32": "NavioBlsct.AddressEncoding.yml",
+  "NavioBlsct.AddressEncoding.Bech32M": "NavioBlsct.AddressEncoding.yml",
+  "NavioBlsct.Blsct": "NavioBlsct.Blsct.yml",
+  "NavioBlsct.Blsct.DecodeAddress(System.String)": "NavioBlsct.Blsct.yml",
+  "NavioBlsct.Blsct.DeriveSubAddress(System.Byte[],System.Byte[],System.IntPtr)": "NavioBlsct.Blsct.yml",
+  "NavioBlsct.Blsct.EncodeAddress(System.IntPtr,NavioBlsct.AddressEncoding)": "NavioBlsct.Blsct.yml",
+  "NavioBlsct.Blsct.FreeObj(System.IntPtr)": "NavioBlsct.Blsct.yml",
+  "NavioBlsct.Blsct.GenSubAddrId(System.Int64,System.UInt64)": "NavioBlsct.Blsct.yml"
+}

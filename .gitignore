@@ -1,5 +1,6 @@
 *~
 build/
 docs/
+!ffi/csharp/docs/
 ffi/.pytest_cache/
 ffi/ts/.emcache/
