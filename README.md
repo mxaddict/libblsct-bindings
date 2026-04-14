@@ -12,6 +12,7 @@
 - [C#](https://github.com/nav-io/libblsct-bindings/blob/main/ffi/csharp/README.md)
   - Package: `NavioBlsct` (NuGet)
   - Targets: `net8.0`, `net10.0`, `netstandard2.1`
+  - [Documentation](https://nav-io.github.io/libblsct-bindings/csharp/)
 
 ## Languages to be supported
 - [C](https://github.com/nav-io/libblsct-bindings/blob/main/ffi/c/README.md)
