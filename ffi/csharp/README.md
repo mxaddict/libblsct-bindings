@@ -7,8 +7,10 @@ stay out of the consumer surface.
 ## Requirements
 
 - .NET 8, .NET 10, or .NET Standard 2.1
-- Native `libblsct.so` / `libblsct.dylib` / `blsct.dll` on the library search
-  path (or set `LIBBLSCT_SO_PATH`)
+- No manual native library setup needed — the NuGet package ships
+  `libblsct.so` (linux-x64) and `libblsct.dylib` (osx-arm64) in the
+  `runtimes/` directory. The .NET SDK resolves the correct native lib
+  automatically.
 
 ## Installation
 

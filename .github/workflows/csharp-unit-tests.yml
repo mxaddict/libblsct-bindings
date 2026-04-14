@@ -126,6 +126,12 @@ jobs:
               -o "$GITHUB_WORKSPACE/libblsct.$SHARED_EXT"
           fi
 
+      - name: Upload native library
+        uses: actions/upload-artifact@v4
+        with:
+          name: libblsct-${{ matrix.os }}
+          path: ${{ github.workspace }}/libblsct.*
+
       - name: Run tests
         env:
           LIBBLSCT_SO_PATH: ${{ github.workspace }}/libblsct.so

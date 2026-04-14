@@ -9,6 +9,13 @@
     <PackageId>NavioBlsct</PackageId>
     <Version>0.1.0</Version>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Authors>nav-io</Authors>
+    <Description>C# bindings for libblsct (BLS Confidential Transactions)</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/nav-io/navio-core</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mxaddict/btcpay-integration</RepositoryUrl>
+    <PackageTags>blsct;navio;crypto;bls;confidential-transactions</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <SwigOutputDir>$(MSBuildProjectDirectory)/obj/swig</SwigOutputDir>
   </PropertyGroup>
 
@@ -18,6 +25,10 @@
 
   <ItemGroup>
     <None Include="blsct.i" Pack="true" PackagePath="swig/" />
+    <None Include="runtimes/**/*" Pack="true" PackagePath="runtimes/" />
+    <None Include="README.md" Pack="true" PackagePath="/" />
+    <None Include="NavioBlsct.targets" Pack="true" PackagePath="build/" />
+    <None Include="NavioBlsct.targets" Pack="true" PackagePath="buildTransitive/" />
   </ItemGroup>
 
   <Target Name="GenerateSwigBindings" BeforeTargets="BeforeCompile">
