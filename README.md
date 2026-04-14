@@ -9,13 +9,20 @@
 [![NuGet](https://img.shields.io/nuget/v/NavioBlsct)](https://www.nuget.org/packages/NavioBlsct)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-`libblsct-bindings` provides multi-language bindings for [navio-core](https://github.com/nav-io/navio-core)'s BLS Confidential Transactions (BLSCT) library.
+`libblsct-bindings` provides multi-language bindings for
+[navio-core](https://github.com/nav-io/navio-core)'s BLS Confidential
+Transactions (BLSCT) library.
 
-BLSCT enables **confidential transactions** on the Navio blockchain — amounts and recipient addresses are hidden on-chain using BLS12-381 elliptic curve cryptography and range proofs. These bindings expose the key derivation, sub-address generation, address encoding, and transaction construction primitives needed to build wallets and integrations in your language of choice.
+BLSCT enables **confidential transactions** on the Navio blockchain — amounts
+and recipient addresses are hidden on-chain using BLS12-381 elliptic curve
+cryptography and range proofs. These bindings expose the key derivation,
+sub-address generation, address encoding, and transaction construction
+primitives needed to build wallets and integrations in your language of choice.
 
 ## Requirements
 
-All language bindings require the native `libblsct` shared library to be available on your system:
+All language bindings require the native `libblsct` shared library to be
+available on your system:
 
 - Linux: `libblsct.so`
 - macOS: `libblsct.dylib`
@@ -53,10 +60,12 @@ See [navio-core](https://github.com/nav-io/navio-core) for build instructions.
 
 ## Contributing
 
-Contributions are welcome. Each language binding lives under `ffi/<lang>/` and has its own README with build and test instructions. Before submitting a PR:
+Contributions are welcome. Each language binding lives under `ffi/<lang>/` and
+has its own README with build and test instructions. Before submitting a PR:
 
 - Run the test suite for the language you changed
-- Ensure the SWIG interface files (`blsct.i`) stay in sync across Python and TypeScript (checked by CI)
+- Ensure the SWIG interface files (`blsct.i`) stay in sync across Python and
+  TypeScript (checked by CI)
 - Follow the existing code style for that language
 
 ## License

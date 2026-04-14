@@ -1,9 +1,9 @@
 # NavioBlsct
 
 **NavioBlsct** is a .NET P/Invoke binding for the
-[libblsct](https://github.com/nav-io/navio-core) C library.
-It exposes BLSCT sub-address derivation and address encoding/decoding
-to any .NET project targeting net8.0, net10.0, or netstandard2.1.
+[libblsct](https://github.com/nav-io/navio-core) C library. It exposes BLSCT
+sub-address derivation and address encoding/decoding to any .NET project
+targeting net8.0, net10.0, or netstandard2.1.
 
 ## Quick start
 
@@ -23,4 +23,5 @@ Blsct.FreeObj(subAddr);
 Blsct.FreeObj(subAddrId);
 ```
 
-See the [API Reference](xref:NavioBlsct) or browse the [Articles](articles/installation.md).
+See the [API Reference](xref:NavioBlsct) or browse the
+[Articles](articles/installation.md).

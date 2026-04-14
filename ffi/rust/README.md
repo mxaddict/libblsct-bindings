@@ -13,4 +13,4 @@ cargo build
 
 ```bash
 cargo run --example init-only
-``` 
+```

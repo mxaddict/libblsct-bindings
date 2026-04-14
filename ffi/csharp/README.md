@@ -1,11 +1,14 @@
 # NavioBlsct — C# Bindings for libblsct
 
-P/Invoke bindings for the [libblsct](https://github.com/nav-io/navio-core) C library. Exposes BLSCT sub-address derivation and address encoding/decoding to .NET.
+P/Invoke bindings for the [libblsct](https://github.com/nav-io/navio-core) C
+library. Exposes BLSCT sub-address derivation and address encoding/decoding to
+.NET.
 
 ## Requirements
 
 - .NET 8, .NET 10, or .NET Standard 2.1
-- Native `libblsct.so` / `libblsct.dylib` / `blsct.dll` on the library search path (or set `LIBBLSCT_SO_PATH`)
+- Native `libblsct.so` / `libblsct.dylib` / `blsct.dll` on the library search
+  path (or set `LIBBLSCT_SO_PATH`)
 
 ## Installation
 
@@ -23,7 +26,8 @@ IntPtr subAddrId = Blsct.GenSubAddrId(account: 0, address: 0);
 Blsct.FreeObj(subAddrId);
 ```
 
-Wraps `gen_sub_addr_id(long account, ulong address)`. Returns an opaque handle. Caller must free with `FreeObj`.
+Wraps `gen_sub_addr_id(long account, ulong address)`. Returns an opaque handle.
+Caller must free with `FreeObj`.
 
 ### Sub-address derivation
 
@@ -41,6 +45,7 @@ Blsct.FreeObj(subAddr);
 Wraps `derive_sub_address(byte* viewKey, byte* spendKey, BlsctSubAddrId*)`.
 
 Key size constraints are validated before the P/Invoke call:
+
 - `viewKey` must be exactly 32 bytes
 - `spendKey` must be exactly 48 bytes
 
@@ -51,14 +56,15 @@ string address = Blsct.EncodeAddress(subAddr, AddressEncoding.Bech32M);
 // e.g. "tnv1..."
 ```
 
-Wraps `encode_address(BlsctSubAddr*, AddressEncoding)`. The HRP is fixed by the native library. Default encoding is `Bech32M`.
+Wraps `encode_address(BlsctSubAddr*, AddressEncoding)`. The HRP is fixed by the
+native library. Default encoding is `Bech32M`.
 
 `AddressEncoding` values:
 
-| Name     | Value | Description          |
-|----------|-------|----------------------|
-| `Bech32` | 0     | Legacy Bech32        |
-| `Bech32M` | 1    | Bech32m (recommended) |
+| Name      | Value | Description           |
+| --------- | ----- | --------------------- |
+| `Bech32`  | 0     | Legacy Bech32         |
+| `Bech32M` | 1     | Bech32m (recommended) |
 
 ### Address decoding
 
@@ -68,7 +74,8 @@ IntPtr subAddr = Blsct.DecodeAddress("tnv1...");
 Blsct.FreeObj(subAddr);
 ```
 
-Wraps `decode_address(const char*)`. Throws `InvalidOperationException` if the native call fails (e.g. invalid address string).
+Wraps `decode_address(const char*)`. Throws `InvalidOperationException` if the
+native call fails (e.g. invalid address string).
 
 ### Memory management
 
@@ -76,19 +83,21 @@ Wraps `decode_address(const char*)`. Throws `InvalidOperationException` if the n
 Blsct.FreeObj(handle);
 ```
 
-All opaque handles returned by the native library must be freed with `FreeObj`. Passing `IntPtr.Zero` is safe (no-op).
+All opaque handles returned by the native library must be freed with `FreeObj`.
+Passing `IntPtr.Zero` is safe (no-op).
 
 ## Return value layout
 
 Native functions return a `RetVal` struct:
 
-| Offset | Size       | Field       |
-|--------|------------|-------------|
-| 0      | 1 byte     | result code (0 = success) |
-| `IntPtr.Size` | `IntPtr.Size` | value pointer |
-| `IntPtr.Size * 2` | `nuint` | value size |
+| Offset            | Size          | Field                     |
+| ----------------- | ------------- | ------------------------- |
+| 0                 | 1 byte        | result code (0 = success) |
+| `IntPtr.Size`     | `IntPtr.Size` | value pointer             |
+| `IntPtr.Size * 2` | `nuint`       | value size                |
 
-`EnsureSuccess` reads the result code and throws on non-zero. `ReadValuePtr` reads the value pointer.
+`EnsureSuccess` reads the result code and throws on non-zero. `ReadValuePtr`
+reads the value pointer.
 
 ## Running tests
 

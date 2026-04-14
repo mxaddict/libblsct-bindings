@@ -2,13 +2,17 @@
 
 ## Project Overview
 
-This project provides TypeScript, Python, and other language bindings for the libblsct (BLS Confidential Transactions) C++ library. It uses SWIG to generate FFI (Foreign Function Interface) bindings for multiple languages.
+This project provides TypeScript, Python, and other language bindings for the
+libblsct (BLS Confidential Transactions) C++ library. It uses SWIG to generate
+FFI (Foreign Function Interface) bindings for multiple languages.
 
 ## Critical Rules
 
 ### 🚫 NEVER Modify navio-core Dependencies
 
-**CRITICAL**: The `navio-core` directory and its contents should **NEVER** be modified by you. This directory contains the upstream C++ library that is managed as a git submodule and is regularly updated by the project maintainers.
+**CRITICAL**: The `navio-core` directory and its contents should **NEVER** be
+modified by you. This directory contains the upstream C++ library that is
+managed as a git submodule and is regularly updated by the project maintainers.
 
 - DO NOT edit any files in `navio-core/`
 - DO NOT suggest changes to files in `navio-core/`
@@ -49,10 +53,13 @@ libblsct-bindings/
 ### Critical Requirement
 
 The SWIG interface files MUST be kept in sync across all languages:
+
 - `ffi/ts/swig/blsct.i` (TypeScript)
 - `ffi/python/blsct/blsct.i` (Python)
 
-A CI workflow (`Common: Check blsct.i consistency`) enforces this. If function signatures are updated in one language's `.i` file, they MUST be updated in all other language `.i` files.
+A CI workflow (`Common: Check blsct.i consistency`) enforces this. If function
+signatures are updated in one language's `.i` file, they MUST be updated in all
+other language `.i` files.
 
 ### When Adding/Modifying FFI Functions
 
@@ -69,6 +76,7 @@ A CI workflow (`Common: Check blsct.i consistency`) enforces this. If function s
 ### Dual Test Environments
 
 The TypeScript bindings must work in both:
+
 1. **Node.js** (native bindings via SWIG)
 2. **Browser** (WebAssembly via Emscripten)
 
@@ -84,7 +92,8 @@ The TypeScript bindings must work in both:
 - `jest.config.cjs` - Node.js test configuration
 - `jest.browser.config.cjs` - Browser/WASM test configuration
 
-Both configurations should run the same test files unless a test has environment-specific issues (should be rare and documented).
+Both configurations should run the same test files unless a test has
+environment-specific issues (should be rare and documented).
 
 ## Build System
 
@@ -103,13 +112,16 @@ Both configurations should run the same test files unless a test has environment
 
 ### Important Build Notes
 
-1. **SWIG Wrappers**: The `blsct_wrap.cxx` file is auto-generated. If you see it's out of sync with the `.i` file, regenerate it with:
+1. **SWIG Wrappers**: The `blsct_wrap.cxx` file is auto-generated. If you see
+   it's out of sync with the `.i` file, regenerate it with:
+
    ```bash
    cd ffi/ts/swig
    swig -javascript -node -c++ -o blsct_wrap.cxx blsct.i
    ```
 
 2. **WASM Build**: Always rebuild WASM after C++ changes:
+
    ```bash
    npm run build:wasm
    ```
@@ -120,21 +132,25 @@ Both configurations should run the same test files unless a test has environment
 
 ### 1. "Illegal number of arguments" Error
 
-**Symptom**: Test fails with "Illegal number of arguments for _wrap_XXX"
+**Symptom**: Test fails with "Illegal number of arguments for \_wrap_XXX"
 
 **Cause**: SWIG wrapper is out of sync with interface definition
 
 **Solution**:
-- Regenerate SWIG wrapper: `swig -javascript -node -c++ -o blsct_wrap.cxx blsct.i`
+
+- Regenerate SWIG wrapper:
+  `swig -javascript -node -c++ -o blsct_wrap.cxx blsct.i`
 - Rebuild native bindings: `node-gyp configure build`
 
 ### 2. CI Consistency Check Fails
 
-**Symptom**: "Inconsistency detected between ./ffi/ts/swig/blsct.i and ./ffi/python/blsct/blsct.i"
+**Symptom**: "Inconsistency detected between ./ffi/ts/swig/blsct.i and
+./ffi/python/blsct/blsct.i"
 
 **Cause**: Function signatures differ between language bindings
 
 **Solution**:
+
 - Compare the two `.i` files
 - Update both to match the C++ header
 - Update corresponding wrapper classes in both languages
@@ -146,6 +162,7 @@ Both configurations should run the same test files unless a test has environment
 **Cause**: `jest.browser.config.cjs` excludes some test files
 
 **Solution**:
+
 - Check `testPathIgnorePatterns` in browser config
 - Only exclude tests that genuinely cannot run in WASM
 - Document why specific tests are excluded
@@ -157,14 +174,16 @@ Both configurations should run the same test files unless a test has environment
 **Cause**: Native JSON doesn't support BigInt
 
 **Solution**:
+
 ```typescript
 // Serialize
 JSON.stringify(obj, (_, value) =>
   typeof value === 'bigint' ? value.toString() : value
-)
+);
 
 // Deserialize
-const amount = typeof obj.amount === 'string' ? BigInt(obj.amount) : BigInt(obj.amount)
+const amount =
+  typeof obj.amount === 'string' ? BigInt(obj.amount) : BigInt(obj.amount);
 ```
 
 ## Git Workflow
@@ -172,6 +191,7 @@ const amount = typeof obj.amount === 'string' ? BigInt(obj.amount) : BigInt(obj.
 ### Before Pushing
 
 1. Run both test suites locally:
+
    ```bash
    npm test
    npm run test:browser
@@ -179,9 +199,11 @@ const amount = typeof obj.amount === 'string' ? BigInt(obj.amount) : BigInt(obj.
 
 2. Ensure both show same test counts
 
-3. Commit with descriptive messages including "Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+3. Commit with descriptive messages including "Co-Authored-By: Claude Sonnet 4.5
+   <noreply@anthropic.com>"
 
 4. Push and monitor CI workflows:
+
    ```bash
    git push
    gh run list --branch <branch-name>
@@ -192,6 +214,7 @@ const amount = typeof obj.amount === 'string' ? BigInt(obj.amount) : BigInt(obj.
 ### CI Workflows
 
 Key workflows to watch:
+
 - `TypeScript: Run unit tests` - Node.js tests
 - `TypeScript Browser: Run WASM unit tests` - Browser tests
 - `Common: Check blsct.i consistency` - Interface consistency
@@ -245,6 +268,7 @@ When the `token_id` parameter was added to `gen_amount_recovery_req`:
    - Ensured tests covered the new parameter
 
 This demonstrated the importance of:
+
 - Keeping all language bindings in sync
 - Adding comprehensive tests
 - Using default values for backward compatibility
@@ -254,27 +278,32 @@ This demonstrated the importance of:
 
 ### Architecture
 
-Uses P/Invoke (`DllImport`) against the native `blsct` shared library — no SWIG, no code generation.
+Uses P/Invoke (`DllImport`) against the native `blsct` shared library — no SWIG,
+no code generation.
 
 - `Blsct.cs` — single file, `static unsafe class Blsct` + `AddressEncoding` enum
-- All public methods validate inputs before the P/Invoke call and throw typed .NET exceptions
+- All public methods validate inputs before the P/Invoke call and throw typed
+  .NET exceptions
 - Callers are responsible for freeing opaque handles via `Blsct.FreeObj(handle)`
 
 ### Implemented API surface
 
-| Public method | Wraps native | Notes |
-|---|---|---|
-| `GenSubAddrId(long, ulong)` | `gen_sub_addr_id` | Returns opaque handle |
-| `DeriveSubAddress(byte[], byte[], IntPtr)` | `derive_sub_address` | viewKey=32 bytes, spendKey=48 bytes |
-| `EncodeAddress(IntPtr, AddressEncoding)` | `encode_address` | Default Bech32M; HRP is library-fixed |
-| `DecodeAddress(string)` | `decode_address` | Throws on invalid input |
-| `FreeObj(IntPtr)` | `free_obj` | No-op on IntPtr.Zero |
+| Public method                              | Wraps native         | Notes                                 |
+| ------------------------------------------ | -------------------- | ------------------------------------- |
+| `GenSubAddrId(long, ulong)`                | `gen_sub_addr_id`    | Returns opaque handle                 |
+| `DeriveSubAddress(byte[], byte[], IntPtr)` | `derive_sub_address` | viewKey=32 bytes, spendKey=48 bytes   |
+| `EncodeAddress(IntPtr, AddressEncoding)`   | `encode_address`     | Default Bech32M; HRP is library-fixed |
+| `DecodeAddress(string)`                    | `decode_address`     | Throws on invalid input               |
+| `FreeObj(IntPtr)`                          | `free_obj`           | No-op on IntPtr.Zero                  |
 
-Internal helpers (`EnsureSuccess`, `ReadResultCode`, `ReadValuePtr`) are `internal` — tested directly in unit tests via the `NavioBlsct.Tests` assembly which shares the namespace.
+Internal helpers (`EnsureSuccess`, `ReadResultCode`, `ReadValuePtr`) are
+`internal` — tested directly in unit tests via the `NavioBlsct.Tests` assembly
+which shares the namespace.
 
 ### RetVal layout
 
 Native functions return a pointer to:
+
 ```
 [0]               byte     result code  (0 = success)
 [IntPtr.Size]     IntPtr   value pointer
@@ -283,8 +312,11 @@ Native functions return a pointer to:
 
 ### Testing
 
-- Unit tests (`BlsctTests.cs`) — pure .NET, no native lib, cover input validation and RetVal parsing
-- Integration tests (`BlsctIntegrationTests.cs`) — skip automatically when `LIBBLSCT_SO_PATH` env var is unset; cover full roundtrip `GenSubAddrId → DeriveSubAddress → EncodeAddress → DecodeAddress`
+- Unit tests (`BlsctTests.cs`) — pure .NET, no native lib, cover input
+  validation and RetVal parsing
+- Integration tests (`BlsctIntegrationTests.cs`) — skip automatically when
+  `LIBBLSCT_SO_PATH` env var is unset; cover full roundtrip
+  `GenSubAddrId → DeriveSubAddress → EncodeAddress → DecodeAddress`
 
 ### Adding new API
 
