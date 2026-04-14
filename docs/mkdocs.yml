@@ -19,6 +19,9 @@ theme:
     - navigation.top
     - content.code.copy
 
+markdown_extensions:
+  - mdx_truly_sane_lists
+
 extra_css:
   - stylesheets/extra.css
 
