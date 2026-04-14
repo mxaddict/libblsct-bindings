@@ -1,0 +1,33 @@
+name: 'C#: Publish package'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  csharp-publish-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          clean: true
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Run tests
+        run: |
+          cd ffi/csharp
+          dotnet test tests/NavioBlsct.Tests.csproj
+
+      - name: Pack
+        run: |
+          cd ffi/csharp
+          dotnet pack NavioBlsct.csproj --configuration Release --output ./nupkg
+
+      - name: Publish to NuGet
+        run: |
+          cd ffi/csharp
+          dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
