@@ -22,7 +22,7 @@
         "files": ["articles/**.md", "articles/**/toc.yml", "toc.yml", "*.md"]
       }
     ],
-    "resource": [],
+    "resource": [{"files": ["logo.svg"]}],
     "output": "_site",
     "globalMetadata": {
       "_appTitle": "NavioBlsct",

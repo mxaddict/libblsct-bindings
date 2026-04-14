@@ -61,6 +61,20 @@ hr {
   letter-spacing: 0.02em;
 }
 
+#logo {
+  height: 32px;
+  width: auto;
+  vertical-align: middle;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  padding-top: 0;
+  padding-bottom: 0;
+  height: 50px;
+}
+
 .navbar.navbar-inverse .navbar-nav > li > a,
 .navbar.navbar-inverse .navbar-nav > li > a:hover,
 .navbar.navbar-inverse .navbar-nav > li > a:focus {
