@@ -135,5 +135,14 @@ namespace NavioBlsct.Tests
                 Blsct.DecodeAddress("invalid-address");
             });
         }
+
+        [Fact(Skip = "fixture not yet generated")]
+        public void FullPipeline_MatchesFixture()
+        {
+            // Test vectors are loaded from blsct_vectors.json (not yet generated).
+            // Once libblsct.so builds and the fixture generator runs, this test will
+            // verify the full encode/decode pipeline against the expected addresses.
+            // See BTCPAY.md "Test Vectors" section for fixture generation steps.
+        }
     }
 }
