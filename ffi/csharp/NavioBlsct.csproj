@@ -27,8 +27,6 @@
     <None Include="blsct.i" Pack="true" PackagePath="swig/" />
     <None Include="runtimes/**/*" Pack="true" PackagePath="runtimes/" />
     <None Include="README.md" Pack="true" PackagePath="/" />
-    <None Include="NavioBlsct.targets" Pack="true" PackagePath="build/" />
-    <None Include="NavioBlsct.targets" Pack="true" PackagePath="buildTransitive/" />
   </ItemGroup>
 
   <Target Name="GenerateSwigBindings" BeforeTargets="BeforeCompile">

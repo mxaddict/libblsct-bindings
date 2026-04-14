@@ -147,10 +147,6 @@ jobs:
         with:
           path: ffi/csharp/runtimes
 
-      # Artifacts land as:
-      #   ffi/csharp/runtimes/native-linux-x64/libblsct.so
-      #   ffi/csharp/runtimes/native-osx-arm64/libblsct.dylib
-      # Restructure to NuGet convention:
       - name: Arrange runtimes
         run: |
           cd ffi/csharp/runtimes
@@ -165,10 +161,76 @@ jobs:
         run: dotnet pack NavioBlsct.csproj --configuration Release --output ./nupkg
         working-directory: ffi/csharp
 
+      - name: Upload nupkg artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: navioblsct-nupkg
+          path: ffi/csharp/nupkg/*.nupkg
+
+  verify-package:
+    needs: pack
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          clean: true
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Download nupkg artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: navioblsct-nupkg
+          path: ffi/csharp/nupkg
+
+      - name: Verify package contents
+        run: |
+          unzip -l ./ffi/csharp/nupkg/*.nupkg | rg 'runtimes/.*/native/'
+
+      - name: Smoke test package in consumer app
+        run: |
+          rm -rf /tmp/navioblsct-package-smoke
+          mkdir -p /tmp/navioblsct-package-smoke
+          cd /tmp/navioblsct-package-smoke
+          dotnet new console -n PackageSmoke --framework net8.0 >/dev/null
+          cd PackageSmoke
+          dotnet add package NavioBlsct --version 0.1.0 --source "$GITHUB_WORKSPACE/ffi/csharp/nupkg" >/dev/null
+          cat > Program.cs <<'EOF'
+          using System;
+          using NavioBlsct;
+
+          blsct.init();
+          Console.WriteLine(blsct.get_blsct_chain());
+          EOF
+          dotnet run
+
+  publish:
+    needs: verify-package
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          clean: true
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Download nupkg artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: navioblsct-nupkg
+          path: ffi/csharp/nupkg
+
       - name: Publish to NuGet
         run: |
-          dotnet nuget push ./nupkg/*.nupkg \
+          dotnet nuget push ./ffi/csharp/nupkg/*.nupkg \
             --api-key ${{ secrets.NUGET_API_KEY }} \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
-        working-directory: ffi/csharp
