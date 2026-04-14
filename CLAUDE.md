@@ -28,10 +28,19 @@ libblsct-bindings/
 │   │   ├── wasm/              # WebAssembly build output
 │   │   ├── scripts/           # Build scripts
 │   │   └── __tests__/         # Test files
-│   └── python/                # Python bindings
-│       └── blsct/
-│           ├── blsct.i        # Python SWIG interface (must match TS version)
-│           └── *.py           # Python wrapper classes
+│   ├── python/                # Python bindings
+│   │   └── blsct/
+│   │       ├── blsct.i        # Python SWIG interface (must match TS version)
+│   │       └── *.py           # Python wrapper classes
+│   └── csharp/                # C# P/Invoke bindings
+│       ├── Blsct.cs           # All public API (static Blsct class + AddressEncoding enum)
+│       ├── AssemblyInfo.cs    # Assembly metadata
+│       ├── NavioBlsct.csproj  # Package: NavioBlsct, targets net8.0/net10.0/netstandard2.1
+│       ├── README.md          # C# usage docs
+│       └── tests/
+│           ├── BlsctTests.cs            # Unit tests (no native lib needed)
+│           ├── BlsctIntegrationTests.cs # Integration tests (require LIBBLSCT_SO_PATH)
+│           └── NavioBlsct.Tests.csproj
 └── navio-core/                # ⚠️ NEVER MODIFY - upstream C++ library
 ```
 
@@ -240,6 +249,49 @@ This demonstrated the importance of:
 - Adding comprehensive tests
 - Using default values for backward compatibility
 - Monitoring CI for cross-language consistency
+
+## C# Bindings (ffi/csharp)
+
+### Architecture
+
+Uses P/Invoke (`DllImport`) against the native `blsct` shared library — no SWIG, no code generation.
+
+- `Blsct.cs` — single file, `static unsafe class Blsct` + `AddressEncoding` enum
+- All public methods validate inputs before the P/Invoke call and throw typed .NET exceptions
+- Callers are responsible for freeing opaque handles via `Blsct.FreeObj(handle)`
+
+### Implemented API surface
+
+| Public method | Wraps native | Notes |
+|---|---|---|
+| `GenSubAddrId(long, ulong)` | `gen_sub_addr_id` | Returns opaque handle |
+| `DeriveSubAddress(byte[], byte[], IntPtr)` | `derive_sub_address` | viewKey=32 bytes, spendKey=48 bytes |
+| `EncodeAddress(IntPtr, AddressEncoding)` | `encode_address` | Default Bech32M; HRP is library-fixed |
+| `DecodeAddress(string)` | `decode_address` | Throws on invalid input |
+| `FreeObj(IntPtr)` | `free_obj` | No-op on IntPtr.Zero |
+
+Internal helpers (`EnsureSuccess`, `ReadResultCode`, `ReadValuePtr`) are `internal` — tested directly in unit tests via the `NavioBlsct.Tests` assembly which shares the namespace.
+
+### RetVal layout
+
+Native functions return a pointer to:
+```
+[0]               byte     result code  (0 = success)
+[IntPtr.Size]     IntPtr   value pointer
+[IntPtr.Size * 2] nuint    value size
+```
+
+### Testing
+
+- Unit tests (`BlsctTests.cs`) — pure .NET, no native lib, cover input validation and RetVal parsing
+- Integration tests (`BlsctIntegrationTests.cs`) — skip automatically when `LIBBLSCT_SO_PATH` env var is unset; cover full roundtrip `GenSubAddrId → DeriveSubAddress → EncodeAddress → DecodeAddress`
+
+### Adding new API
+
+1. Add `[DllImport]` private extern declaration in `Blsct.cs`
+2. Add public wrapper with .NET-idiomatic input validation
+3. Add unit test in `BlsctTests.cs`
+4. Add integration test in `BlsctIntegrationTests.cs` guarded by `HasLibblsct`
 
 ## Resources
 

@@ -9,6 +9,9 @@
 - [TypeScript/JavaScript](https://github.com/nav-io/libblsct-bindings/blob/main/ffi/ts/README.md)
   - [Package (npm)](https://www.npmjs.com/package/navio-blsct)
   - [Documentation](https://nav-io.github.io/libblsct-bindings/ts/)
+- [C#](https://github.com/nav-io/libblsct-bindings/blob/main/ffi/csharp/README.md)
+  - Package: `NavioBlsct` (NuGet)
+  - Targets: `net8.0`, `net10.0`, `netstandard2.1`
 
 ## Languages to be supported
 - [C](https://github.com/nav-io/libblsct-bindings/blob/main/ffi/c/README.md)
