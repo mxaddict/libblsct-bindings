@@ -4,6 +4,14 @@ Docs are built with [DocFX](https://dotnet.github.io/docfx/).
 
 ## Prerequisites
 
+.NET SDK and the ASP.NET Core runtime are required:
+
+- **Arch Linux:** `sudo pacman -S dotnet-sdk aspnet-runtime`
+- **Ubuntu/Debian:** `sudo apt install dotnet-sdk-8.0 aspnetcore-runtime-8.0`
+- **macOS (Homebrew):** `brew install dotnet`
+
+Then install DocFX:
+
 ```bash
 dotnet tool install -g docfx
 ```
