@@ -33,9 +33,6 @@ jobs:
       - name: Install MkDocs
         run: pip install mkdocs-material
 
-      - name: Copy README as docs index
-        run: cp README.md docs/src/index.md
-
       - name: Build documentation
         run: |
           cd docs
