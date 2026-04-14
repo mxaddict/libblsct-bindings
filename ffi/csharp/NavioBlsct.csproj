@@ -9,6 +9,7 @@
     <PackageId>NavioBlsct</PackageId>
     <Version>0.1.0</Version>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <SwigOutputDir>$(MSBuildProjectDirectory)/obj/swig</SwigOutputDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,4 +19,14 @@
   <ItemGroup>
     <None Include="blsct.i" Pack="true" PackagePath="swig/" />
   </ItemGroup>
+
+  <Target Name="GenerateSwigBindings" BeforeTargets="BeforeCompile">
+    <MakeDir Directories="$(SwigOutputDir)" />
+    <Exec
+      Command='swig -c++ -csharp -namespace NavioBlsct -dllimport blsct -outdir "$(SwigOutputDir)" -o "$(SwigOutputDir)/blsct_wrap.cxx" "$(MSBuildProjectDirectory)/blsct.i"' />
+
+    <ItemGroup>
+      <Compile Include="$(SwigOutputDir)/*.cs" />
+    </ItemGroup>
+  </Target>
 </Project>

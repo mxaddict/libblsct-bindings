@@ -4,44 +4,10 @@ using System.Runtime.InteropServices;
 namespace NavioBlsct
 {
     /// <summary>
-    /// Specifies the Bech32 encoding variant to use when encoding a BLSCT sub-address.
+    /// Internal compatibility facade kept for tests and transition code.
+    /// Public consumers should use the SWIG-generated API directly.
     /// </summary>
-    public enum AddressEncoding
-    {
-        /// <summary>
-        /// Legacy Bech32 encoding (RFC-compatible, original Bitcoin variant).
-        /// Kept for backward compatibility; prefer <see cref="Bech32M"/> for new usage.
-        /// </summary>
-        Bech32 = 0,
-
-        /// <summary>
-        /// Bech32m encoding (BIP-350). Recommended for all new BLSCT addresses.
-        /// </summary>
-        Bech32M = 1,
-    }
-
-    /// <summary>
-    /// Provides P/Invoke bindings to the native <c>libblsct</c> shared library.
-    /// All methods are static; there is no instance state.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Every opaque handle returned by <see cref="GenSubAddrId"/>, <see cref="DeriveSubAddress"/>,
-    /// and <see cref="DecodeAddress"/> is heap-allocated by the native library and must be
-    /// released by calling <see cref="FreeObj"/> when no longer needed.
-    /// Failing to do so is a memory leak.
-    /// </para>
-    /// <para>
-    /// Native functions return a pointer to a <c>RetVal</c> struct whose layout is:
-    /// <list type="table">
-    ///   <listheader><term>Offset</term><term>Size</term><term>Field</term></listheader>
-    ///   <item><term>0</term><term>1 byte</term><term>Result code (0 = success)</term></item>
-    ///   <item><term><c>IntPtr.Size</c></term><term><c>IntPtr.Size</c> bytes</term><term>Value pointer</term></item>
-    ///   <item><term><c>IntPtr.Size * 2</c></term><term><c>nuint</c></term><term>Value size</term></item>
-    /// </list>
-    /// </para>
-    /// </remarks>
-    public static unsafe class Blsct
+    internal static unsafe class Blsct
     {
         private const string LibraryName = "blsct";
 

@@ -17,6 +17,11 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Install SWIG
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y swig
+
       - name: Run tests
         run: |
           cd ffi/csharp

@@ -278,28 +278,25 @@ This demonstrated the importance of:
 
 ### Architecture
 
-Uses P/Invoke (`DllImport`) against the native `blsct` shared library — no SWIG,
-no code generation.
+SWIG-generated public API. Internal compatibility helpers may still exist, but
+consumers should only see the generated surface.
 
 - `blsct.i` — shared FFI contract; keep it aligned with TS/Python SWIG files
-- `Blsct.cs` — single file, `static unsafe class Blsct` + `AddressEncoding` enum
-- All public methods validate inputs before the P/Invoke call and throw typed
-  .NET exceptions
-- Callers are responsible for freeing opaque handles via `Blsct.FreeObj(handle)`
+- `Blsct.cs` — internal compatibility helper only
+- SWIG output is generated at build time into `obj/swig/`
+- Public consumers use `blsct` and generated proxy types
 
 ### Implemented API surface
 
 | Public method                              | Wraps native         | Notes                                 |
 | ------------------------------------------ | -------------------- | ------------------------------------- |
-| `GenSubAddrId(long, ulong)`                | `gen_sub_addr_id`    | Returns opaque handle                 |
-| `DeriveSubAddress(byte[], byte[], IntPtr)` | `derive_sub_address` | viewKey=32 bytes, spendKey=48 bytes   |
-| `EncodeAddress(IntPtr, AddressEncoding)`   | `encode_address`     | Default Bech32M; HRP is library-fixed |
-| `DecodeAddress(string)`                    | `decode_address`     | Throws on invalid input               |
-| `FreeObj(IntPtr)`                          | `free_obj`           | No-op on IntPtr.Zero                  |
+| `blsct.gen_sub_addr_id(...)`               | `gen_sub_addr_id`    | Generated SWIG surface                |
+| `blsct.derive_sub_address(...)`            | `derive_sub_address` | Generated SWIG surface                |
+| `blsct.encode_address(...)`                | `encode_address`     | Generated SWIG surface                |
+| `blsct.decode_address(...)`                | `decode_address`     | Generated SWIG surface                |
+| `blsct.free_obj(...)`                      | `free_obj`           | Generated SWIG surface                |
 
-Internal helpers (`EnsureSuccess`, `ReadResultCode`, `ReadValuePtr`) are
-`internal` — tested directly in unit tests via the `NavioBlsct.Tests` assembly
-which shares the namespace.
+Internal helpers stay internal. Use them only for compatibility or tests.
 
 ### RetVal layout
 
@@ -314,7 +311,7 @@ Native functions return a pointer to:
 ### Testing
 
 - Unit tests (`BlsctTests.cs`) — pure .NET, no native lib, cover input
-  validation and RetVal parsing
+  validation and RetVal parsing on the internal helper path
 - Integration tests (`BlsctIntegrationTests.cs`) — skip automatically when
   `LIBBLSCT_SO_PATH` env var is unset; cover full roundtrip
   `GenSubAddrId → DeriveSubAddress → EncodeAddress → DecodeAddress`
@@ -322,9 +319,9 @@ Native functions return a pointer to:
 ### Adding new API
 
 1. Add `[DllImport]` private extern declaration in `Blsct.cs`
-2. Add public wrapper with .NET-idiomatic input validation
-3. Add unit test in `BlsctTests.cs`
-4. Add integration test in `BlsctIntegrationTests.cs` guarded by `HasLibblsct`
+2. Keep the helper internal
+3. Update the SWIG contract first, then regenerate
+4. Add/update unit and integration tests for the new generated surface
 
 ## Resources
 

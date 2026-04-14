@@ -31,6 +31,11 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Install SWIG
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y swig
+
       - name: Install DocFX
         run: dotnet tool install -g docfx
 
