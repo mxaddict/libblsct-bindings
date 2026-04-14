@@ -13,6 +13,9 @@ on:
       - 'ffi/csharp/**'
       - '.github/workflows/csharp-unit-tests.yml'
 
+env:
+  NAVIO_CORE_SHA: '623ad2da8e9031d8b900c54af6d393ec88e9a32a'
+
 jobs:
   csharp-run-unit-tests:
     strategy:
@@ -31,16 +34,113 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Install SWIG
+      - name: Install system dependencies
         run: |
           if command -v apt-get >/dev/null 2>&1; then
             sudo apt-get update
-            sudo apt-get install -y swig
+            sudo apt-get install -y swig autoconf automake libtool pkg-config build-essential libgmp-dev
           else
-            brew install swig
+            brew install swig autoconf automake libtool pkg-config gmp
+          fi
+
+      - name: Clone navio-core
+        run: |
+          git clone --depth 1 https://github.com/nav-io/navio-core navio-core-build
+          cd navio-core-build
+          git fetch --depth 1 origin ${{ env.NAVIO_CORE_SHA }}
+          git checkout ${{ env.NAVIO_CORE_SHA }}
+
+      - name: Cache navio-core depends
+        uses: actions/cache@v4
+        with:
+          path: navio-core-build/depends/built
+          key: navio-depends-${{ runner.os }}-${{ env.NAVIO_CORE_SHA }}
+
+      - name: Build navio-core depends
+        run: make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu) -C navio-core-build/depends NO_QT=1 NO_WALLET=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1
+
+      - name: Build libblsct static libraries
+        run: |
+          cd navio-core-build
+          ./autogen.sh
+          ARCH_DIR=$(ls -d depends/*-*-* | head -1)
+          ./configure --prefix="$(pwd)/$ARCH_DIR" --enable-build-libblsct-only
+          make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+
+      - name: Build libblsct shared library
+        run: |
+          cd navio-core-build
+          ARCH_DIR=$(ls -d depends/*-*-* | head -1)
+
+          # Symlink so SWIG #include "../navio-core/..." resolves from ffi/ts/swig/
+          ln -sf "$GITHUB_WORKSPACE/navio-core-build" "$GITHUB_WORKSPACE/ffi/ts/navio-core"
+
+          # Generate SWIG C# wrapper
+          mkdir -p /tmp/swig-out
+          swig -c++ -csharp -namespace NavioBlsct -dllimport blsct \
+            -outdir /tmp/swig-out \
+            -o /tmp/swig-out/blsct_wrap.cxx \
+            "$GITHUB_WORKSPACE/ffi/csharp/blsct.i"
+
+          # Compile stubs for symbols not in libblsct.a
+          c++ -fPIC -std=c++20 -O2 \
+            -I src -I src/bls/include -I src/bls/mcl/include -DBLS_ETH=1 \
+            -c "$GITHUB_WORKSPACE/ffi/csharp/native_stubs.cpp" -o /tmp/native_stubs.o
+
+          # Determine shared lib extension
+          if [[ $RUNNER_OS == 'macOS' ]]; then
+            SHARED_EXT=dylib
+            SHARED_FLAGS="-dynamiclib -install_name @rpath/libblsct.$SHARED_EXT"
+          else
+            SHARED_EXT=so
+            SHARED_FLAGS="-shared"
+          fi
+
+          # Link everything into a shared library
+          if [[ $RUNNER_OS == 'macOS' ]]; then
+            # macOS uses -force_load instead of --whole-archive
+            c++ $SHARED_FLAGS -fPIC -std=c++20 -O2 \
+              -I src -I src/bls/include -I src/bls/mcl/include -DBLS_ETH=1 \
+              /tmp/swig-out/blsct_wrap.cxx \
+              /tmp/native_stubs.o \
+              -Wl,-force_load,src/libblsct.a \
+              -Wl,-force_load,src/libunivalue_blsct.a \
+              -Wl,-force_load,src/bls/lib/libbls384_256.a \
+              -Wl,-force_load,src/bls/mcl/lib/libmcl.a \
+              -Wl,-force_load,"$ARCH_DIR/lib/libevent.a" \
+              -lstdc++ -lm -lpthread -lgmp \
+              -o "$GITHUB_WORKSPACE/libblsct.$SHARED_EXT"
+          else
+            c++ $SHARED_FLAGS -fPIC -std=c++20 -O2 \
+              -I src -I src/bls/include -I src/bls/mcl/include -DBLS_ETH=1 \
+              /tmp/swig-out/blsct_wrap.cxx \
+              /tmp/native_stubs.o \
+              -Wl,--whole-archive \
+              src/libblsct.a \
+              src/libunivalue_blsct.a \
+              src/bls/lib/libbls384_256.a \
+              src/bls/mcl/lib/libmcl.a \
+              "$ARCH_DIR/lib/libevent.a" \
+              -Wl,--no-whole-archive \
+              -lstdc++ -lm -lpthread -lgmp \
+              -o "$GITHUB_WORKSPACE/libblsct.$SHARED_EXT"
           fi
 
       - name: Run tests
+        env:
+          LIBBLSCT_SO_PATH: ${{ github.workspace }}/libblsct.so
         run: |
           cd ffi/csharp
-          dotnet test tests/NavioBlsct.Tests.csproj
+
+          # Build first so we know the output directory
+          dotnet build tests/NavioBlsct.Tests.csproj
+
+          # Copy native lib next to test assembly so DllImport finds it
+          if [[ $RUNNER_OS == 'macOS' ]]; then
+            cp "$GITHUB_WORKSPACE/libblsct.dylib" tests/bin/Debug/net8.0/libblsct.dylib
+            export LIBBLSCT_SO_PATH="$GITHUB_WORKSPACE/libblsct.dylib"
+          else
+            cp "$GITHUB_WORKSPACE/libblsct.so" tests/bin/Debug/net8.0/libblsct.so
+          fi
+
+          dotnet test tests/NavioBlsct.Tests.csproj --no-build
