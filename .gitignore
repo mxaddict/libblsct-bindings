@@ -2,5 +2,7 @@
 build/
 docs/
 !ffi/csharp/docs/
+!/docs/
+/docs/site/
 ffi/.pytest_cache/
 ffi/ts/.emcache/

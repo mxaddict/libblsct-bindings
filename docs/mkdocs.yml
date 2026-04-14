@@ -1,0 +1,26 @@
+site_name: libblsct-bindings
+site_description: Multi-language BLSCT bindings for navio-core
+site_url: https://nav-io.github.io/libblsct-bindings/
+repo_url: https://github.com/nav-io/libblsct-bindings
+repo_name: nav-io/libblsct-bindings
+
+docs_dir: src
+
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: custom
+    accent: custom
+  logo: https://nav.io/assets/images/logo.svg
+  favicon: https://nav.io/assets/images/logo.svg
+  features:
+    - navigation.instant
+    - navigation.top
+    - content.code.copy
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md

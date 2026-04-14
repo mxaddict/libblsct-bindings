@@ -1,0 +1,7 @@
+/* Navio brand colors for MkDocs Material slate theme */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:        #ec1ec6;
+  --md-primary-fg-color--light: #f060d4;
+  --md-primary-fg-color--dark:  #c418a8;
+  --md-accent-fg-color:         #1d8ff9;
+}
