@@ -78,21 +78,37 @@
             <article class="content wrap" id="_content" data-uid="">
 <h1 id="navioblsct">NavioBlsct</h1>
 
-<p><strong>NavioBlsct</strong> is a .NET P/Invoke binding for the
-<a href="https://github.com/nav-io/navio-core">libblsct</a> C library. It exposes BLSCT
-sub-address derivation and address encoding/decoding to any .NET project
-targeting net8.0, net10.0, or netstandard2.1.</p>
+<p><strong>NavioBlsct</strong> is a .NET SWIG binding for the
+<a href="https://github.com/nav-io/navio-core">libblsct</a> C library. It exposes the full
+BLSCT ABI — key derivation, address encoding, range proofs, transaction
+building, and more — to any .NET project targeting net8.0, net10.0, or
+netstandard2.1.</p>
 <h2 id="quick-start">Quick start</h2>
 <pre><code class="lang-xml">&lt;PackageReference Include=&quot;NavioBlsct&quot; Version=&quot;0.1.0&quot; /&gt;
 </code></pre>
 <p>Then:</p>
 <pre><code class="lang-csharp">using NavioBlsct;
 
-IntPtr subAddrId = Blsct.GenSubAddrId(account: 0, address: 0);
-IntPtr subAddr   = Blsct.DeriveSubAddress(viewKey, spendKey, subAddrId);
-string address   = Blsct.EncodeAddress(subAddr, AddressEncoding.Bech32M);
-Blsct.FreeObj(subAddr);
-Blsct.FreeObj(subAddrId);
+blsct.init();
+blsct.set_blsct_chain(BlsctChain.Mainnet);
+
+// Derive a sub-address from a seed scalar
+var rvSeed = blsct.gen_scalar(12345);
+var seed = blsct.cast_to_scalar(rvSeed.value);
+var childKey = blsct.from_seed_to_child_key(seed);
+var txKey = blsct.from_child_key_to_tx_key(childKey);
+var viewKey = blsct.from_tx_key_to_view_key(txKey);
+var spendPk = blsct.scalar_to_pub_key(blsct.from_tx_key_to_spending_key(txKey));
+
+var subAddrId = blsct.gen_sub_addr_id(0, 0);
+var subAddr = blsct.derive_sub_address(viewKey, spendPk, subAddrId);
+var dpkVal = blsct.sub_addr_to_dpk(subAddr);
+
+var rvEnc = blsct.encode_address(dpkVal, AddressEncoding.Bech32M);
+var address = blsct.cast_to_const_char_ptr(rvEnc.value);
+
+blsct.free_obj(rvSeed.value);
+blsct.free_obj(rvEnc.value);
 </code></pre>
 <p>See the <a class="xref" href="api/NavioBlsct.html">API Reference</a> or browse the
 <a href="articles/installation.html">Articles</a>.</p>

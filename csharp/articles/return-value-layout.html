@@ -5,9 +5,9 @@
   <head>
     <meta charset="utf-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-      <title>Native Return Value Layout | NavioBlsct </title>
+      <title>Return Value Types | NavioBlsct </title>
       <meta name="viewport" content="width=device-width">
-      <meta name="title" content="Native Return Value Layout | NavioBlsct ">
+      <meta name="title" content="Return Value Types | NavioBlsct ">
     
     
       <link rel="shortcut icon" href="../favicon.ico">
@@ -76,51 +76,134 @@
         <div class="article row grid">
           <div class="col-md-10">
             <article class="content wrap" id="_content" data-uid="">
-<h1 id="native-return-value-layout">Native Return Value Layout</h1>
+<h1 id="return-value-types">Return Value Types</h1>
 
-<p>All native functions in <code>libblsct</code> return a pointer to a <code>RetVal</code> struct rather
-than returning values directly. This allows the library to communicate both a
-status code and a payload in one allocation.</p>
-<h2 id="struct-layout">Struct layout</h2>
+<p>All fallible native functions return a SWIG-mapped result type. There are four
+variants depending on what the function produces.</p>
+<h2 id="blsctretval">BlsctRetVal</h2>
+<p>The most common return type. Fields:</p>
 <table>
 <thead>
 <tr>
-<th>Offset</th>
-<th>Size</th>
 <th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>0</code></td>
-<td>1 byte</td>
-<td>Result code (<code>0</code> = success, non-zero = error)</td>
+<td><code>result</code></td>
+<td><code>byte</code></td>
+<td><code>0</code> = success, non-zero = error</td>
 </tr>
 <tr>
-<td><code>IntPtr.Size</code></td>
-<td><code>IntPtr.Size</code> bytes</td>
-<td>Value pointer</td>
+<td><code>value</code></td>
+<td><code>SWIGTYPE_p_void</code></td>
+<td>Opaque pointer to the native obj</td>
 </tr>
 <tr>
-<td><code>IntPtr.Size * 2</code></td>
-<td><code>nuint</code></td>
-<td>Value size</td>
+<td><code>value_size</code></td>
+<td><code>uint</code></td>
+<td>Byte size (used by range proofs, vector predicates)</td>
 </tr>
 </tbody>
 </table>
-<p>On a 64-bit runtime <code>IntPtr.Size</code> is 8, so the total struct size is 24 bytes. On
-a 32-bit runtime it is 12 bytes.</p>
-<h2 id="internal-helpers">Internal helpers</h2>
-<p>Two <code>internal</code> methods read fields from this struct:</p>
-<ul>
-<li><code>Blsct.ReadResultCode(IntPtr retVal)</code> — reads the byte at offset 0.</li>
-<li><code>Blsct.ReadValuePtr(IntPtr retVal)</code> — reads the pointer at offset
-<code>IntPtr.Size</code>.</li>
-</ul>
-<p><code>Blsct.EnsureSuccess(IntPtr retVal)</code> calls <code>ReadResultCode</code> and throws
-<code>InvalidOperationException</code> when the code is non-zero.</p>
-<p>These members are <code>internal</code> but are exposed to the <code>NavioBlsct.Tests</code> assembly
-via <code>[assembly: InternalsVisibleTo(&quot;NavioBlsct.Tests&quot;)]</code>.</p>
+<pre><code class="lang-csharp">var rv = blsct.gen_scalar(42);
+if (rv.result != 0) throw new Exception(&quot;failed&quot;);
+var scalar = blsct.cast_to_scalar(rv.value);
+// ...
+blsct.free_obj(rv.value);
+</code></pre>
+<h2 id="blsctboolretval">BlsctBoolRetVal</h2>
+<p>Returned by boolean-result functions such as <code>verify_range_proofs</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>result</code></td>
+<td><code>byte</code></td>
+<td><code>0</code> = success, non-zero = error</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td><code>bool</code></td>
+<td>The boolean result</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="lang-csharp">var rv = blsct.verify_range_proofs(rpVec);
+if (rv.result != 0) throw new Exception(&quot;failed&quot;);
+bool valid = rv.value;
+</code></pre>
+<h2 id="blsctamountsretval">BlsctAmountsRetVal</h2>
+<p>Returned by <code>recover_amount</code>. Use <code>blsct.free_amounts_ret_val(rv)</code> to free.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>result</code></td>
+<td><code>byte</code></td>
+<td><code>0</code> = success, non-zero = error</td>
+</tr>
+<tr>
+<td><code>value</code></td>
+<td><code>SWIGTYPE_p_void</code></td>
+<td>Pointer to amounts result array</td>
+</tr>
+</tbody>
+</table>
+<p>Access individual results with:</p>
+<pre><code class="lang-csharp">blsct.get_amount_recovery_result_size(rv.value)       // uint
+blsct.get_amount_recovery_result_is_succ(rv.value, i) // bool
+blsct.get_amount_recovery_result_amount(rv.value, i)  // ulong
+blsct.get_amount_recovery_result_msg(rv.value, i)     // string
+blsct.get_amount_recovery_result_gamma(rv.value, i)   // SWIGTYPE_p_BlsctScalar
+</code></pre>
+<h2 id="blsctctxretval">BlsctCTxRetVal</h2>
+<p>Returned by signed transaction construction functions.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>result</code></td>
+<td><code>byte</code></td>
+<td><code>0</code> = success, non-zero = error</td>
+</tr>
+<tr>
+<td><code>ctx</code></td>
+<td><code>SWIGTYPE_p_void</code></td>
+<td>Pointer to the signed CTx</td>
+</tr>
+<tr>
+<td><code>in_amount_err_index</code></td>
+<td><code>uint</code></td>
+<td>Index of the first bad input amount</td>
+</tr>
+<tr>
+<td><code>out_amount_err_index</code></td>
+<td><code>uint</code></td>
+<td>Index of the first bad output amount</td>
+</tr>
+</tbody>
+</table>
 
 </article>
           </div>

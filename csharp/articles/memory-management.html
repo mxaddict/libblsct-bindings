@@ -78,59 +78,164 @@
             <article class="content wrap" id="_content" data-uid="">
 <h1 id="memory-management">Memory Management</h1>
 
-<p>NavioBlsct is a thin P/Invoke layer over <code>libblsct</code>. The native library
-allocates memory for every opaque handle it returns. That memory is <strong>not</strong>
-managed by the .NET garbage collector.</p>
-<h2 id="rule-always-call-freeobj">Rule: always call FreeObj</h2>
-<p>Every <code>IntPtr</code> returned by the following methods <strong>must</strong> be freed when no
-longer needed:</p>
+<p>NavioBlsct is a SWIG binding over <code>libblsct</code>. The native library allocates
+memory for opaque handles it returns. That memory is <strong>not</strong> managed by the .NET
+garbage collector.</p>
+<h2 id="rule-match-the-helper">Rule: match the helper</h2>
+<p>Every native handle <strong>must</strong> be released with the matching helper. Most
+<code>BlsctRetVal.value</code> handles use <code>blsct.free_obj(val)</code>, while <code>BlsctCTxRetVal</code>
+and <code>BlsctAmountsRetVal</code> have dedicated release functions.</p>
+<p>Use <code>blsct.free_obj(val)</code> for heap-allocated opaque objects:</p>
+<pre><code class="lang-csharp">var rv = blsct.gen_scalar(12345);
+var scalar = blsct.cast_to_scalar(rv.value);
+// ... use scalar ...
+blsct.free_obj(rv.value);
+</code></pre>
+<h2 id="typed-delete-helpers">Typed delete helpers</h2>
+<p>Some aggregate objects have dedicated delete calls — use these instead of
+<code>free_obj</code>:</p>
 <table>
 <thead>
 <tr>
-<th>Method</th>
-<th>Frees</th>
+<th>Object type</th>
+<th>Free call</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>Blsct.GenSubAddrId</code></td>
-<td>The sub-address identifier handle</td>
+<td><code>uint64</code> vector</td>
+<td><code>blsct.delete_uint64_vec(vec)</code></td>
 </tr>
 <tr>
-<td><code>Blsct.DeriveSubAddress</code></td>
-<td>The sub-address handle</td>
+<td>Range proof vector</td>
+<td><code>blsct.delete_range_proof_vec(vec)</code></td>
 </tr>
 <tr>
-<td><code>Blsct.DecodeAddress</code></td>
-<td>The decoded sub-address handle</td>
+<td>Amount recovery req vec</td>
+<td><code>blsct.delete_amount_recovery_req_vec(vec)</code></td>
+</tr>
+<tr>
+<td>String map</td>
+<td><code>blsct.delete_string_map(map)</code></td>
+</tr>
+<tr>
+<td>Token info</td>
+<td><code>blsct.delete_token_info(val)</code></td>
+</tr>
+<tr>
+<td>Unsigned input</td>
+<td><code>blsct.delete_unsigned_input(val)</code></td>
+</tr>
+<tr>
+<td>Unsigned output</td>
+<td><code>blsct.delete_unsigned_output(val)</code></td>
+</tr>
+<tr>
+<td>Unsigned transaction</td>
+<td><code>blsct.delete_unsigned_transaction(tx)</code></td>
+</tr>
+<tr>
+<td>Signed transaction (CTx)</td>
+<td><code>blsct.delete_ctx(val)</code></td>
+</tr>
+<tr>
+<td>Tx hex vector</td>
+<td><code>blsct.delete_tx_hex_vec(vec)</code></td>
+</tr>
+<tr>
+<td>AmountsRetVal</td>
+<td><code>blsct.free_amounts_ret_val(rv)</code></td>
 </tr>
 </tbody>
 </table>
-<pre><code class="lang-csharp">IntPtr subAddrId = Blsct.GenSubAddrId(0, 0);
+<p><code>delete_unsigned_input</code> and <code>delete_unsigned_output</code> are for standalone objects.
+When an input or output is added to an unsigned transaction via
+<code>add_unsigned_transaction_input/output</code>, the data is <strong>copied</strong>. The original
+<code>unsIn</code>/<code>unsOut</code> must still be freed by the caller, and the transaction itself
+must be freed via <code>delete_unsigned_transaction</code>.</p>
+<h2 id="pattern-tryfinally">Pattern: try/finally</h2>
+<pre><code class="lang-csharp">var rvSeed = blsct.gen_scalar(12345);
 try
 {
-    IntPtr subAddr = Blsct.DeriveSubAddress(viewKey, spendKey, subAddrId);
-    try
-    {
-        string address = Blsct.EncodeAddress(subAddr);
-        // use address ...
-    }
-    finally
-    {
-        Blsct.FreeObj(subAddr);
-    }
+    var seed = blsct.cast_to_scalar(rvSeed.value);
+    var childKey = blsct.from_seed_to_child_key(seed);
+    // ... use childKey (scalars derived from childKey share its lifetime) ...
 }
 finally
 {
-    Blsct.FreeObj(subAddrId);
+    blsct.free_obj(rvSeed.value);
 }
 </code></pre>
 <h2 id="safe-no-op">Safe no-op</h2>
-<p>Passing <code>IntPtr.Zero</code> to <code>FreeObj</code> is always safe and is a no-op.</p>
-<h2 id="encodeaddress-is-self-managing">EncodeAddress is self-managing</h2>
-<p><code>Blsct.EncodeAddress</code> returns a managed <code>string</code>. It internally frees both the
-native return-value struct and the inner string pointer before returning; the
-caller does <strong>not</strong> call <code>FreeObj</code> on the return value.</p>
+<p>Passing <code>null</code> or a zero-handle to <code>free_obj</code> is always safe.</p>
+<h2 id="values-that-do-not-need-freeing">Values that do NOT need freeing</h2>
+<h3 id="cast-wrappers">Cast wrappers</h3>
+<p><code>cast_to_*</code> methods return a typed wrapper that points to the <strong>same</strong> native
+pointer as the original <code>RetVal.value</code>. Freeing both causes a double-free.</p>
+<pre><code class="lang-csharp">var rv = blsct.gen_random_point();
+var point = blsct.cast_to_point(rv.value);  // same native pointer
+// ... use point ...
+blsct.free_obj(rv.value);  // correct — frees the native object
+// DO NOT call blsct.free_obj(point) — double-free
+</code></pre>
+<p>Apply this rule to all <code>cast_to_*</code> variants: <code>cast_to_scalar</code>, <code>cast_to_point</code>,
+<code>cast_to_pub_key</code>, <code>cast_to_tx_in</code>, <code>cast_to_tx_out</code>, <code>cast_to_token_id</code>,
+<code>cast_to_sub_addr</code>, <code>cast_to_dpk</code>, <code>cast_to_signature</code>, <code>cast_to_script</code>,
+<code>cast_to_out_point</code>, <code>cast_to_sub_addr_id</code>, <code>cast_to_key_id</code>,
+<code>cast_to_range_proof</code>, <code>cast_to_vector_predicate</code>, <code>cast_to_uint256</code>,
+<code>cast_to_cscript</code>, <code>cast_to_const_char_ptr</code>, etc.</p>
+<p><strong>Rule:</strong> free the <code>RetVal.value</code> once. Never free the cast wrapper.</p>
+<h3 id="derived-scalars-from-the-same-source">Derived scalars from the same source</h3>
+<p>Scalars derived from a <code>BlsctRetVal.value</code> via <code>cast_to_scalar</code> share the same
+native allocation:</p>
+<pre><code class="lang-csharp">var rvDestPk = blsct.gen_scalar(92);
+var destPkScalar = blsct.cast_to_scalar(rvDestPk.value);  // same pointer
+var destPk = blsct.scalar_to_pub_key(destPkScalar);       // NEW allocation — must free
+blsct.free_obj(rvDestPk.value);  // frees destPkScalar's native memory too
+blsct.free_obj(destPk);          // correct — destPk is a separate allocation
+</code></pre>
+<h3 id="ownership-notes">Ownership notes</h3>
+<p><code>sign_unsigned_transaction</code> reads the unsigned transaction but does <strong>not</strong>
+delete it. The caller must still call <code>delete_unsigned_transaction(unsTx)</code> after
+signing.</p>
+<p><code>add_unsigned_transaction_input/output</code> <strong>copy</strong> the input/output into the
+transaction. The original <code>unsIn</code>/<code>unsOut</code> must still be freed by the caller
+(via <code>delete_unsigned_input</code>/<code>delete_unsigned_output</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Ownership</th>
+<th>Caller cleanup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sign_unsigned_transaction</code></td>
+<td>reads, no transfer</td>
+<td><code>delete_unsigned_transaction(unsTx)</code></td>
+</tr>
+<tr>
+<td><code>add_unsigned_transaction_input</code></td>
+<td>copies <code>unsIn</code></td>
+<td><code>delete_unsigned_input(unsIn)</code></td>
+</tr>
+<tr>
+<td><code>add_unsigned_transaction_output</code></td>
+<td>copies <code>unsOut</code></td>
+<td><code>delete_unsigned_output(unsOut)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="returned-string-pointers">Returned string pointers</h3>
+<p>Functions like <code>serialize_*</code>, <code>buf_to_malloced_hex_c_str</code>, and
+<code>cast_to_const_char_ptr</code> return heap-allocated <code>char*</code> strings. Free them with
+<code>blsct.free_obj(val)</code>:</p>
+<pre><code class="lang-csharp">var rvSigned = blsct.sign_unsigned_transaction(unsTx);
+var signedHex = blsct.cast_to_const_char_ptr(rvSigned.value);
+// ... use signedHex ...
+blsct.free_obj(rvSigned.value);  // frees the char*
+</code></pre>
 
 </article>
           </div>

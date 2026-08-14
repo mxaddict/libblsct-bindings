@@ -1897,15 +1897,15 @@ references:
   isSpec: "True"
   fullName: NavioBlsct.blsct.cast_to_signature
   nameWithType: blsct.cast_to_signature
-- uid: NavioBlsct.blsct.cast_to_size_t(System.Int32)
-  name: cast_to_size_t(int)
-  href: api/NavioBlsct.blsct.html#NavioBlsct_blsct_cast_to_size_t_System_Int32_
-  commentId: M:NavioBlsct.blsct.cast_to_size_t(System.Int32)
-  name.vb: cast_to_size_t(Integer)
-  fullName: NavioBlsct.blsct.cast_to_size_t(int)
-  fullName.vb: NavioBlsct.blsct.cast_to_size_t(Integer)
-  nameWithType: blsct.cast_to_size_t(int)
-  nameWithType.vb: blsct.cast_to_size_t(Integer)
+- uid: NavioBlsct.blsct.cast_to_size_t(System.UInt64)
+  name: cast_to_size_t(ulong)
+  href: api/NavioBlsct.blsct.html#NavioBlsct_blsct_cast_to_size_t_System_UInt64_
+  commentId: M:NavioBlsct.blsct.cast_to_size_t(System.UInt64)
+  name.vb: cast_to_size_t(ULong)
+  fullName: NavioBlsct.blsct.cast_to_size_t(ulong)
+  fullName.vb: NavioBlsct.blsct.cast_to_size_t(ULong)
+  nameWithType: blsct.cast_to_size_t(ulong)
+  nameWithType.vb: blsct.cast_to_size_t(ULong)
 - uid: NavioBlsct.blsct.cast_to_size_t*
   name: cast_to_size_t
   href: api/NavioBlsct.blsct.html#NavioBlsct_blsct_cast_to_size_t_

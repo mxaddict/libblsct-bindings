@@ -82,16 +82,11 @@
 <h2 id="requirements">Requirements</h2>
 <ul>
 <li>.NET 8, .NET 10, or .NET Standard 2.1</li>
-<li>The native <code>libblsct</code> shared library on the library search path:
-<ul>
-<li>Linux: <code>libblsct.so</code></li>
-<li>macOS: <code>libblsct.dylib</code></li>
-<li>Windows: <code>blsct.dll</code></li>
+<li>The NuGet package ships native <code>runtimes/</code> assets for <code>linux-x64</code>,
+<code>osx-arm64</code>, and <code>win-x64</code>.</li>
 </ul>
-</li>
-</ul>
-<p>Set the <code>LIBBLSCT_SO_PATH</code> environment variable to an explicit path if the
-library is not on the default search path.</p>
+<p><code>LIBBLSCT_SO_PATH</code> is only needed for integration tests or when you want to
+override the native shared library path manually.</p>
 <h2 id="adding-the-package">Adding the package</h2>
 <pre><code class="lang-xml">&lt;PackageReference Include=&quot;NavioBlsct&quot; Version=&quot;0.1.0&quot; /&gt;
 </code></pre>
