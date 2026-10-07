@@ -112,6 +112,10 @@ export const buildCTx = (txIns: any, txOuts: any): BlsctCTxRetVal => {
   return blsct.build_ctx(txIns, txOuts)
 }
 
+export const buildCTxWithChange = (txIns: any, txOuts: any, changeAddr: any): BlsctCTxRetVal => {
+  return blsct.build_ctx_with_change(txIns, txOuts, changeAddr)
+}
+
 export const createTxInVec = (): any => {
   return blsct.create_tx_in_vec()
 }

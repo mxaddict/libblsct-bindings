@@ -6,6 +6,7 @@ import {
   BLSCT_IN_AMOUNT_ERROR,
   BLSCT_OUT_AMOUNT_ERROR,
   buildCTx,
+  buildCTxWithChange,
   castToUint8_tPtr,
   createTxHexVec,
   createTxInVec,
@@ -27,6 +28,7 @@ import { CTxId } from './ctxId'
 import { CTxIns } from './ctxIns'
 import { CTxOuts } from './ctxOuts'
 import { ManagedObj } from './managedObj'
+import { SubAddr } from './subAddr'
 import { TxIn } from './txIn'
 import { TxOut } from './txOut'
 
@@ -53,7 +55,10 @@ import { TxOut } from './txOut'
  * const subAddrId = SubAddrId.generate(123, 456)
  * const subAddr = SubAddr.generate(viewKey, spendingPubKey, subAddrId)
  * const txOut = TxOut.generate(subAddr, outAmount, 'navio')
- * const cTx = CTx.generate([txIn], [txOut])
+ * // The fee is computed from the transaction's size, so the inputs rarely
+ * // cover outputs + fee exactly: pass a change address you own.
+ * const changeAddr = SubAddr.generate(viewKey, spendingPubKey, SubAddrId.generate(-1, 0))
+ * const cTx = CTx.generate([txIn], [txOut], changeAddr)
  * for (const cTxIn of cTx.getCTxIns()) {
  *   console.log(`prevOutHash: ${cTxIn.getPrevOutHash()}`)
  *   console.log(`prevOutN: ${cTxIn.getPrevOutN()}`)
@@ -92,11 +97,15 @@ export class CTx extends ManagedObj {
   /** Constructs a new `CTx` instance.
    * @param srcTxIns - An array of `TxIn` objects representing the transaction inputs.
    * @param srcTxOuts - An array of `TxOut` objects representing the transaction outputs.
+   * @param changeAddr - Where to pay change. Without one, the build fails
+   *   unless the inputs cover the outputs plus the size-based fee exactly:
+   *   libblsct refuses to pay change to a key nobody owns.
    * @returns A new `CTx` instance.
    */
   static generate(
     txIns: TxIn[],
-    txOuts: TxOut[]
+    txOuts: TxOut[],
+    changeAddr?: SubAddr
   ): CTx {
     // create vector and add txIns to it
     const txInVec = createTxInVec()
@@ -110,7 +119,9 @@ export class CTx extends ManagedObj {
       addToTxOutVec(txOutVec, txOut.value())
     }
 
-    const rv = buildCTx(txInVec, txOutVec)
+    const rv = changeAddr === undefined
+      ? buildCTx(txInVec, txOutVec)
+      : buildCTxWithChange(txInVec, txOutVec, changeAddr.value())
 
     // free the temporary vectors
     deleteTxInVec(txInVec)

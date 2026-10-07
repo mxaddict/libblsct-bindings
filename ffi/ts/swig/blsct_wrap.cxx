@@ -4402,6 +4402,45 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_build_ctx_with_change(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  void *arg1 = 0 ;
+  void *arg2 = 0 ;
+  BlsctSubAddr *arg3 = 0 ;
+  int res1 ;
+  int res2 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  BlsctCTxRetVal *result = 0 ;
+  
+  if (args.Length() < 3 || args.Length() > 3) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_build_ctx_with_change.");
+  
+  res1 = SWIG_ConvertPtr(args[0],SWIG_as_voidptrptr(&arg1), 0, 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "build_ctx_with_change" "', argument " "1"" of type '" "void const *""'"); 
+  }res2 = SWIG_ConvertPtr(args[1],SWIG_as_voidptrptr(&arg2), 0, 0);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "build_ctx_with_change" "', argument " "2"" of type '" "void const *""'"); 
+  }res3 = SWIG_ConvertPtr(args[2], &argp3,SWIGTYPE_p_BlsctSubAddr, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "build_ctx_with_change" "', argument " "3"" of type '" "BlsctSubAddr const *""'"); 
+  }
+  arg3 = reinterpret_cast< BlsctSubAddr * >(argp3);result = (BlsctCTxRetVal *)build_ctx_with_change((void const *)arg1,(void const *)arg2,(BlsctSubAddr const *)arg3);
+  jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_BlsctCTxRetVal, 0 |  0 );
+  
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_get_ctx_id(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
@@ -10917,6 +10956,7 @@ SWIGV8_AddStaticFunction(exports_obj, "create_tx_out_vec", _wrap_create_tx_out_v
 SWIGV8_AddStaticFunction(exports_obj, "add_to_tx_out_vec", _wrap_add_to_tx_out_vec, context);
 SWIGV8_AddStaticFunction(exports_obj, "delete_tx_out_vec", _wrap_delete_tx_out_vec, context);
 SWIGV8_AddStaticFunction(exports_obj, "build_ctx", _wrap_build_ctx, context);
+SWIGV8_AddStaticFunction(exports_obj, "build_ctx_with_change", _wrap_build_ctx_with_change, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_id", _wrap_get_ctx_id, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_ins", _wrap_get_ctx_ins, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_outs", _wrap_get_ctx_outs, context);

@@ -430,6 +430,7 @@ const EXPORTED_FUNCTIONS = [
   '_build_tx_in',
   '_build_tx_out',
   '_build_ctx',
+  '_build_ctx_with_change',
   '_get_ctx_id',
   '_get_ctx_ins',
   '_get_ctx_outs',

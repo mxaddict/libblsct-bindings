@@ -248,6 +248,11 @@ export BlsctCTxRetVal* build_ctx(
     const void* void_tx_ins,
     const void* void_tx_outs
 );
+export BlsctCTxRetVal* build_ctx_with_change(
+    const void* void_tx_ins,
+    const void* void_tx_outs,
+    const BlsctSubAddr* change_addr
+);
 // using void* instead of const void* to avoid const_cast
 export const char* get_ctx_id(void* vp_ctx);
 export const void* get_ctx_ins(void* vp_ctx);

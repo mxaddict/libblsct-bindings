@@ -1250,6 +1250,14 @@ export function buildCTx(txIns: unknown, txOuts: unknown): BlsctCTxRetVal {
   return parsed;
 }
 
+export function buildCTxWithChange(txIns: unknown, txOuts: unknown, changeAddr: unknown): BlsctCTxRetVal {
+  const module = getBlsctModule();
+  const resultPtr = module._build_ctx_with_change(txIns as number, txOuts as number, changeAddr as number);
+  const parsed = parseCTxRetVal(resultPtr);
+  freePtr(resultPtr);
+  return parsed;
+}
+
 export function deleteCTx(ctx: unknown): void {
   const module = getBlsctModule();
   module._delete_ctx(ctx as number);
