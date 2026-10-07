@@ -368,3 +368,33 @@ def test_tx():
   assert amounts[0].is_succ == True
   assert amounts[0].amount == out_amount
   assert amounts[0].message == message
+
+def test_ctx_out_keys_are_points():
+  # The output keys are curve points (libblsct returns BlsctPoint). Read as
+  # a Scalar, printing or serializing one aborted the interpreter.
+  spend_pk = PublicKey()
+  dest = SubAddr.from_double_public_key(
+    DoublePublicKey.from_view_and_spend_keys(PublicKey(), spend_pk)
+  )
+  blinding_key = Scalar.random()
+  tx_in = TxIn(410000, 100, Scalar(12), TokenId(), OutPoint(CTxId.deserialize(secrets.token_hex(32))))
+  tx_out = TxOut(dest, 10000, 'keys', TokenId(), "Normal", 0, False, blinding_key)
+  change_addr = SubAddr.from_double_public_key(
+    DoublePublicKey.from_view_and_spend_keys(PublicKey(), PublicKey())
+  )
+  ctx_outs = CTx([tx_in], [tx_out], change_addr).get_ctx_outs()
+  outs = [ctx_outs.at(i) for i in range(ctx_outs.size())]
+
+  # Every output, payment, change and fee alike, yields serializable points.
+  for out in outs:
+    for key in (out.get_spending_key(), out.get_ephemeral_key(), out.get_blinding_key()):
+      assert isinstance(key, Point)
+      assert len(key.serialize()) == 96
+
+  # The payment output is the one whose ephemeral key is G * blinding_key;
+  # core sets its blinding key to spend_pk * blinding_key.
+  expected_ephemeral = Point.from_scalar(blinding_key).serialize()
+  payment = [o for o in outs if o.get_ephemeral_key().serialize() == expected_ephemeral]
+  assert len(payment) == 1
+  expected_blinding = spend_pk.get_point().scalar_multiply(blinding_key).serialize()
+  assert payment[0].get_blinding_key().serialize() == expected_blinding

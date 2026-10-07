@@ -2,7 +2,6 @@ from . import blsct
 from .managed_obj import ManagedObj
 from .point import Point
 from .range_proof import RangeProof
-from .scalar import Scalar
 from .script import Script
 from .serializable import Serializable
 from .token_id import TokenId
@@ -46,20 +45,20 @@ class CTxOut(ManagedObj, Serializable):
     blsct.free_obj(rv)
     return hex 
 
-  def get_spending_key(self) -> Scalar:
-    """Get the spending key of the transaction output."""
+  def get_spending_key(self) -> Point:
+    """Get the spending key of the transaction output, a public point."""
     obj = blsct.get_ctx_out_spending_key(self.value())
-    return Scalar.from_obj(obj)
+    return Point.from_obj(obj)
 
   def get_ephemeral_key(self) -> Point:
     """Get the ephemeral key of the transaction output."""
     obj = blsct.get_ctx_out_ephemeral_key(self.value())
     return Point.from_obj(obj)
 
-  def get_blinding_key(self) -> Scalar:
-    """Get the blinding key of the transaction output."""
+  def get_blinding_key(self) -> Point:
+    """Get the blinding key of the transaction output, a public point."""
     obj = blsct.get_ctx_out_blinding_key(self.value())
-    return Scalar.from_obj(obj)
+    return Point.from_obj(obj)
 
   def get_range_proof(self) -> RangeProof:
     """Get the range proof of the transaction output."""
