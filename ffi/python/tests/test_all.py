@@ -293,9 +293,15 @@ def test_tx():
   print(f"tx_out.blinding_key: {tx_out.get_blinding_key()}")
 
   # tx
+  # The fee is size-based, so the input over-funds it; the remainder is
+  # change, which libblsct only pays to an address someone owns.
+  change_addr = SubAddr.from_double_public_key(
+    DoublePublicKey.from_view_and_spend_keys(PublicKey(), PublicKey())
+  )
   ctx = CTx(
     [tx_in],
     [tx_out],
+    change_addr,
   )
 
   ctx_id = ctx.get_ctx_id()

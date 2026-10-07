@@ -4,6 +4,7 @@ from .ctx_outs import CTxOuts
 from .managed_obj import ManagedObj
 from .serializable import Serializable
 from .ctx_id import CTxId
+from .sub_addr import SubAddr
 from .tx_in import TxIn
 from .tx_out import TxOut
 from typing import Any, override, Self, Type
@@ -29,7 +30,10 @@ class CTx(ManagedObj, Serializable):
   >>> tx_in = TxIn(in_amount, gamma, spending_key, token_id, out_point)
   >>> sub_addr = SubAddr.from_double_public_key(DoublePublicKey())
   >>> tx_out = TxOut(sub_addr, out_amount, 'navio')
-  >>> ctx = CTx([tx_in], [tx_out])
+  >>> # The fee is size-based, so the input over-funds it: pay the change to
+  >>> # an address you own.
+  >>> change_addr = SubAddr.from_double_public_key(DoublePublicKey())
+  >>> ctx = CTx([tx_in], [tx_out], change_addr)
   >>> ctx_ins = ctx.get_ctx_ins()
   >>> for i in range(ctx_ins.size()):
   ...   ctx_in = ctx_ins.at(i)
@@ -116,7 +120,12 @@ class CTx(ManagedObj, Serializable):
   >>> ser == deser.serialize()
   True
   """
-  def __init__(self, tx_ins: list[TxIn], tx_outs: list[TxOut]):
+  def __init__(self, tx_ins: list[TxIn], tx_outs: list[TxOut], change_addr: SubAddr | None = None):
+    """
+    Without `change_addr` the build fails unless the inputs cover the outputs
+    plus the size-based fee exactly: libblsct refuses to pay change to a key
+    nobody owns.
+    """
     tx_in_vec = blsct.create_tx_in_vec()
     for tx_in in tx_ins:
       blsct.add_to_tx_in_vec(tx_in_vec, tx_in.value())
@@ -125,7 +134,10 @@ class CTx(ManagedObj, Serializable):
     for tx_out in tx_outs:
       blsct.add_to_tx_out_vec(tx_out_vec, tx_out.value())
 
-    rv = blsct.build_ctx(tx_in_vec, tx_out_vec)
+    if change_addr is None:
+      rv = blsct.build_ctx(tx_in_vec, tx_out_vec)
+    else:
+      rv = blsct.build_ctx_with_change(tx_in_vec, tx_out_vec, change_addr.value())
     rv_result = int(rv.result)
 
     blsct.delete_tx_in_vec(tx_in_vec)
