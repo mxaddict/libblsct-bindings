@@ -9,6 +9,7 @@ set -euo pipefail
 
 SHARED="./ffi/navio-core.sha"
 PACKAGES=(
+    "./ffi/python"
     "./ffi/ts"
 )
 

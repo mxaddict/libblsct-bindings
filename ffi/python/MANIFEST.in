@@ -1,1 +1,2 @@
 include blsct.i
+include navio-core.sha
