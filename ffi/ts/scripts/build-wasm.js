@@ -75,6 +75,17 @@ function ensureNavioCore() {
   const srcDir = path.join(NAVIO_CORE_DIR, 'src');
   const requiredSha = IS_PROD ? MASTER_SHA : null;
 
+  // Local-source bypass, as in build.js: build against an in-place navio-core
+  // checkout (e.g. an unmerged branch) as-is. Without it, a checkout at any
+  // other commit than the pin is deleted and re-cloned below.
+  if (process.env.BLSCT_LOCAL_NAVIO_CORE === '1') {
+    if (!fs.existsSync(srcDir)) {
+      throw new Error(`BLSCT_LOCAL_NAVIO_CORE=1 but ${NAVIO_CORE_DIR} has no src/ directory`);
+    }
+    console.log(`Using existing local navio-core dir (BLSCT_LOCAL_NAVIO_CORE=1): ${NAVIO_CORE_DIR}`);
+    return;
+  }
+
   // Check if navio-core exists and is at the correct commit
   if (fs.existsSync(srcDir)) {
     const currentSha = getNavioCoreCommit();
