@@ -12,7 +12,7 @@
     "build:browser": "npm run build:wasm && tsc -p tsconfig.browser.json && node scripts/fix-browser-build.js",
     "docs": "typedoc",
     "docs:watch": "nodemon --watch src --ext ts --exec \"npx typedoc\"",
-    "test": "tsc && (NODE_OPTIONS=--expose-gc jest --runInBand --verbose || echo '::warning::binding unit tests are stale against navio-core v0.1.10 (ctxOut/serialization/build_ctx) — non-blocking for the v0.1.10.x emergency release, tracked for v0.1.11')",
+    "test": "tsc && node --expose-gc node_modules/jest/bin/jest.js --runInBand --verbose",
     "test:browser": "npm run build:browser && NODE_OPTIONS='--experimental-vm-modules' jest --config jest.browser.config.cjs"
   },
   "license": "MIT",
