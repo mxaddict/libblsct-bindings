@@ -19,6 +19,9 @@ on:
 jobs:
   ts-run-unit-tests:
     strategy:
+      # Each OS is its own verdict: one red leg must not cancel the others,
+      # or a Windows build failure hides behind a stale test on Linux.
+      fail-fast: false
       matrix:
         os: ['ubuntu-24.04', 'macos-15', 'windows-2022']
 
