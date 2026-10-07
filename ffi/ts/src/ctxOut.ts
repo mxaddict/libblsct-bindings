@@ -17,7 +17,6 @@ import {
 
 import { Point } from './point'
 import { RangeProof } from './rangeProof'
-import { Scalar } from './scalar'
 import { Script } from './script'
 import { TokenId } from './tokenId'
 
@@ -76,11 +75,11 @@ export class CTxOut {
   }
 
   /** Returns the spending key associated with the transaction output.
-   * @returns The spending key of the output.
+   * @returns The spending key of the output, a public point.
    */
-  getSpendingKey(): Scalar {
+  getSpendingKey(): Point {
     const obj = getCTxOutSpendingKey(this.obj)
-    return Scalar.fromObj(obj)
+    return Point.fromObj(obj)
   }
   
   /** Returns the ephemeral key associated with the transaction output.
@@ -92,11 +91,11 @@ export class CTxOut {
   }
 
   /** Returns the blinding key associated with the transaction output.
-   * @returns The blinding key of the output.
+   * @returns The blinding key of the output, a public point.
    */
-  getBlindingKey(): Scalar {
+  getBlindingKey(): Point {
     const obj = getCTxOutBlindingKey(this.obj)
-    return Scalar.fromObj(obj)
+    return Point.fromObj(obj)
   }
 
   /** Returns the range proof associated with the transaction output.
