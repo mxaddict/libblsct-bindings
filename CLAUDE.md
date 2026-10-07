@@ -17,7 +17,11 @@ managed as a git submodule and is regularly updated by the project maintainers.
 - DO NOT edit any files in `navio-core/`
 - DO NOT suggest changes to files in `navio-core/`
 - If you see issues with the C++ code, report them but DO NOT modify the files
-- The `navio-core` commit hash is pinned in build scripts - this is intentional
+- The `navio-core` commit hash is pinned in `ffi/navio-core.sha` - this is
+  intentional. Each binding that builds libblsct keeps a copy in its own package
+  directory (it is built from there at install time); bump the pin by editing
+  `ffi/navio-core.sha` and running `./script/sync-navio-core-pin.sh`. CI
+  (`Common: Check navio-core pin consistency`) fails if a copy drifts.
 
 ## Project Structure
 

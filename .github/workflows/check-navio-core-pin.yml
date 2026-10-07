@@ -1,0 +1,32 @@
+name: 'Common: Check navio-core pin consistency'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'ffi/navio-core.sha'
+      - 'ffi/*/navio-core.sha'
+      - 'script/navio-core-pin-consistency.sh'
+      - '.github/workflows/check-navio-core-pin.yml'
+  pull_request:
+    paths:
+      - 'ffi/navio-core.sha'
+      - 'ffi/*/navio-core.sha'
+      - 'script/navio-core-pin-consistency.sh'
+      - '.github/workflows/check-navio-core-pin.yml'
+
+
+jobs:
+  common-check-navio-core-pin:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          clean: true
+
+      - name: Run consistency check
+        run: |
+          ./script/navio-core-pin-consistency.sh

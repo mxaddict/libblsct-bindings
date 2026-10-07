@@ -2,13 +2,14 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 const { execSync, spawnSync } = require('child_process')
+const { readNavioCorePin } = require('./navio-core-pin')
 
 // Configuration
 const IS_PROD = true
 
-// Production: clone by specific SHA from nav-io/navio-core
-// git ls-remote https://github.com/nav-io/navio-core.git refs/heads/master
-const MASTER_SHA = '75e81b5422405d20d7931c31b19527ff03fde73e' // master 2026-09-09 (blst backend, nav-io/navio-core#431 + #432)
+// Production: clone by specific SHA from nav-io/navio-core. Every binding
+// builds from the same commit, pinned in ffi/navio-core.sha.
+const MASTER_SHA = readNavioCorePin()
 const NAVIO_CORE_REPO = IS_PROD
   ? 'https://github.com/nav-io/navio-core'
   : 'https://github.com/gogoex/navio-core'
