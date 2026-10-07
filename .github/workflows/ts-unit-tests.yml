@@ -20,12 +20,14 @@ jobs:
   ts-run-unit-tests:
     strategy:
       matrix:
-        os: ['ubuntu-24.04', 'macos-15']
+        os: ['ubuntu-24.04', 'macos-15', 'windows-2022']
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Install system dependencies
+        # The Windows runner ships Visual Studio, CMake and git already.
+        if: runner.os != 'Windows'
         run: |
           if [[ $RUNNER_OS == 'Linux' ]]; then
             sudo apt-get update && sudo apt-get install -y swig autoconf automake libtool pkg-config git python3 build-essential cmake

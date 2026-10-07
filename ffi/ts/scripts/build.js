@@ -45,13 +45,18 @@ function isDarwin() {
   return process.platform === 'darwin'
 }
 
+function isWindows() {
+  return process.platform === 'win32'
+}
+
 function isRoot() {
   return typeof process.getuid === 'function' && process.getuid() === 0
 }
 
 function hasCmd(cmd) {
   try {
-    execSync(`command -v ${cmd}`, { stdio: 'ignore' })
+    // `command -v` is a POSIX shell builtin; cmd.exe has `where` instead.
+    execSync(isWindows() ? `where ${cmd}` : `command -v ${cmd}`, { stdio: 'ignore' })
     return true
   } catch {
     return false
@@ -274,15 +279,23 @@ const getCfg = () => {
   // of them land in the out-of-source build tree: libblsct.a, the vendored
   // supranational/blst (src/blst, built by cmake/blst.cmake — assembly on
   // x86_64/arm64, portable C elsewhere) and univalue.
+  //
+  // On Windows the Visual Studio generator is multi-config: it puts each
+  // archive in a per-configuration subdirectory and names it `<target>.lib`
+  // rather than `lib<target>.a`. binding.gyp names the same files.
+  const archive = (dir, target) => isWindows()
+    ? path.join(dir, 'Release', `${target}.lib`)
+    : path.join(dir, `lib${target}.a`)
+  const libName = (name) => isWindows() ? `${name}.lib` : `lib${name}.a`
   const srcDotAFiles = [
-    path.join(cmakeBuildDir, 'lib', 'libblsct.a'),
-    path.join(cmakeBuildDir, 'src', 'univalue', 'libunivalue.a'),
-    path.join(cmakeBuildDir, 'lib', 'libblst.a'),
+    archive(path.join(cmakeBuildDir, 'lib'), 'blsct'),
+    archive(path.join(cmakeBuildDir, 'src', 'univalue'), 'univalue'),
+    archive(path.join(cmakeBuildDir, 'lib'), 'blst'),
   ]
   const destDotAFiles = [
-    path.join(libsDir, 'libblsct.a'),
-    path.join(libsDir, 'libunivalue_blsct.a'),
-    path.join(libsDir, 'libblst.a'),
+    path.join(libsDir, libName('blsct')),
+    path.join(libsDir, libName('univalue_blsct')),
+    path.join(libsDir, libName('blst')),
   ]
   const libsCacheMetaPath = path.join(libsDir, LIBS_CACHE_META_BASENAME)
 
@@ -409,9 +422,12 @@ const buildLibBlsct = (cfg, numCpus) => {
   // Build libblsct plus the in-tree static deps the node addon links
   // against (blst is named explicitly: a static library's private link
   // dependency is not built by `--target blsct` alone).
+  // CMAKE_BUILD_TYPE only applies to single-config generators; the Visual
+  // Studio one picks the configuration at build time and defaults to Debug.
   console.log('Building libblsct...')
   const buildRes = spawnSync('cmake', [
     '--build', cfg.cmakeBuildDir,
+    '--config', 'Release',
     '--target', 'blsct', 'blst', 'univalue',
     '-j', String(numCpus),
   ], {
@@ -608,7 +624,7 @@ const main = () => {
   // If cached .a files exist and contain the required symbols, reuse them.
   // Otherwise rebuild libblsct from the checked-out navio-core commit.
   const haveAllArchives = cfg.destDotAFiles.every(file => fs.existsSync(file))
-  const cachedLibBlsctPath = path.join(cfg.libsDir, 'libblsct.a')
+  const cachedLibBlsctPath = cfg.destDotAFiles[0]
   const cacheMeta = readCacheMeta(cfg.libsCacheMetaPath)
   const cacheMetaMatches = cacheMeta !== null &&
     cacheMeta.cacheVersion === cfg.libsCacheVersion &&
