@@ -62,19 +62,15 @@ navio_core_dir = package_dir / "navio-core"
 cmake_build_dir = navio_core_dir / "build"
 navio_tmp_dir = Path.home() / ".navio-tmp"
 
-src_path = navio_core_dir / "src"
-
-# Static archives produced by the CMake BUILD_LIBBLSCT_ONLY build, all in the
-# out-of-source build tree: libblsct, the vendored supranational/blst it does
-# its curve arithmetic with, and univalue.
-dummy_impl_path = src_path / "blsct/external_api/dummy_impl.cpp"
-
 libs_dir = navio_tmp_dir / "libs"
 # The navio-core commit the cached archives in libs_dir were built from. They
 # are reused only for that same commit, so bumping the pin rebuilds them
 # instead of linking stale archives against new headers.
 libs_cache_sha_path = libs_dir / "navio-core.sha"
 
+# Static archives produced by the CMake BUILD_LIBBLSCT_ONLY build, all in the
+# out-of-source build tree: libblsct, the vendored supranational/blst it does
+# its curve arithmetic with, and univalue.
 if IS_MSVC:
   # MSVC: located by name after the build (see find_msvc_archives), since the
   # output dir depends on the generator.
@@ -138,78 +134,6 @@ class CustomBuildExt(build_ext):
       )
       log(f"Checked out navio-core commit {navio_core_master_sha}")
 
-    self.patch_dummy_impl()
-
-  def patch_dummy_impl(self):
-    if not dummy_impl_path.is_file():
-      log(f"Skipping dummy_impl patch (not found): {dummy_impl_path}")
-      return
-
-    content = dummy_impl_path.read_text(encoding="utf-8")
-    updated = content
-    patched_rand = False
-    patched_translation = False
-
-    decl_line = "    explicit FastRandomContext(bool fDeterministic = false) noexcept;"
-    rand_decl_line = "    uint256 rand256() noexcept;"
-    if rand_decl_line not in updated:
-      if decl_line in updated:
-        updated = updated.replace(
-          decl_line,
-          decl_line + "\n" + rand_decl_line,
-          1,
-        )
-        patched_rand = True
-      else:
-        log("Warning: could not add rand256 declaration to FastRandomContext")
-
-    impl_line = "FastRandomContext::FastRandomContext(bool fDeterministic) noexcept {}"
-    rand_impl_line = "uint256 FastRandomContext::rand256() noexcept { return uint256(); }"
-    if rand_impl_line not in updated:
-      if impl_line in updated:
-        updated = updated.replace(
-          impl_line,
-          impl_line + "\n" + rand_impl_line,
-          1,
-        )
-        patched_rand = True
-      else:
-        log("Warning: could not add rand256 implementation to FastRandomContext")
-
-    translation_fixed_line = "extern const std::function<std::string(const char*)> G_TRANSLATION_FUN = nullptr;"
-    if "G_TRANSLATION_FUN" not in updated:
-      anchor = "const size_t OUTPUT_SIZE = 0;\n"
-      insertion = "\n" + translation_fixed_line + "\n"
-      if anchor in updated:
-        updated = updated.replace(anchor, anchor + insertion, 1)
-      else:
-        updated = updated + insertion
-      patched_translation = True
-    elif "extern const std::function<std::string(const char" not in updated:
-      translation_lines = [
-        "const std::function<std::string(const char*)> G_TRANSLATION_FUN = nullptr;",
-        "const std::function<std::string(const char *)> G_TRANSLATION_FUN = nullptr;",
-      ]
-      for translation_line in translation_lines:
-        if translation_line in updated:
-          updated = updated.replace(
-            translation_line,
-            translation_fixed_line,
-            1,
-          )
-          patched_translation = True
-          break
-      else:
-        log("Warning: could not patch G_TRANSLATION_FUN linkage in dummy_impl.cpp")
-
-    if updated != content:
-      dummy_impl_path.write_text(updated, encoding="utf-8")
-      if patched_rand and patched_translation:
-        log("Patched dummy_impl.cpp with rand256 + G_TRANSLATION_FUN stubs")
-      elif patched_rand:
-        log("Patched dummy_impl.cpp with FastRandomContext::rand256 stub")
-      elif patched_translation:
-        log("Patched dummy_impl.cpp with G_TRANSLATION_FUN linkage stub")
 
   def build_libblsct(self, num_cpus: str):
     # navio-core v0.1.0+ builds with CMake. BUILD_LIBBLSCT_ONLY builds the
