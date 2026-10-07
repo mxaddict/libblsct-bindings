@@ -3,7 +3,7 @@ import {
   TxOutputType,
 } from '../blsct'
 
-import { genCTx, randomHex } from './util'
+import { changeAddr, genCTx, randomHex } from './util'
 import { CTx } from '../ctx'
 import { CTxId } from '../ctxId'
 import { OutPoint } from '../outPoint'
@@ -383,7 +383,7 @@ test('CTx: serialize with multiple inputs', () => {
     Scalar.random(),
   )
 
-  const ctx = CTx.generate(txIns, [txOut])
+  const ctx = CTx.generate(txIns, [txOut], changeAddr())
   const hex = ctx.serialize()
   const restored = CTx.deserialize(hex)
 
@@ -424,7 +424,7 @@ test('CTx: serialize with multiple outputs', () => {
     )
   })
 
-  const ctx = CTx.generate([txIn], txOuts)
+  const ctx = CTx.generate([txIn], txOuts, changeAddr())
   const hex = ctx.serialize()
   const restored = CTx.deserialize(hex)
 
