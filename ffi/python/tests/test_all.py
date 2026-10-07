@@ -360,7 +360,12 @@ def test_tx():
   # test amount recovery
   nonce = view_key.get_point().scalar_multiply(blinding_key)  
 
-  rp = ctx_outs.at(0).get_range_proof()
+  # Core shuffles the outputs, so find the payment by its ephemeral key
+  # (G * blinding_key) rather than assuming it comes first.
+  expected_ephemeral = Point.from_scalar(blinding_key).serialize()
+  payment = [o for o in ctx_outs if o.get_ephemeral_key().serialize() == expected_ephemeral]
+  assert len(payment) == 1
+  rp = payment[0].get_range_proof()
   req = AmountRecoveryReq(rp, nonce)
   amounts = RangeProof.recover_amounts([req])
 
