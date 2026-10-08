@@ -8219,28 +8219,30 @@ static SwigV8ReturnValue _wrap_build_tx_out(const SwigV8Arguments &args) {
   BlsctSubAddr *arg1 = 0 ;
   uint64_t arg2 ;
   char *arg3 = 0 ;
-  BlsctTokenId *arg4 = 0 ;
-  TxOutputType arg5 ;
-  uint64_t arg6 ;
-  bool arg7 ;
-  BlsctScalar *arg8 = 0 ;
+  size_t arg4 ;
+  BlsctTokenId *arg5 = 0 ;
+  TxOutputType arg6 ;
+  uint64_t arg7 ;
+  bool arg8 ;
+  BlsctScalar *arg9 = 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   unsigned long long val2 ;
   int ecode2 = 0 ;
   int res3 ;
   char *buf3 = 0 ;
+  size_t size3 = 0 ;
   int alloc3 = 0 ;
-  void *argp4 = 0 ;
-  int res4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  unsigned long long val6 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
   int ecode6 = 0 ;
-  bool val7 ;
+  unsigned long long val7 ;
   int ecode7 = 0 ;
-  void *argp8 = 0 ;
-  int res8 = 0 ;
+  bool val8 ;
+  int ecode8 = 0 ;
+  void *argp9 = 0 ;
+  int res9 = 0 ;
   BlsctRetVal *result = 0 ;
   
   if (args.Length() < 8 || args.Length() > 8) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_build_tx_out.");
@@ -8253,31 +8255,32 @@ static SwigV8ReturnValue _wrap_build_tx_out(const SwigV8Arguments &args) {
   if (!SWIG_IsOK(ecode2)) {
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "build_tx_out" "', argument " "2"" of type '" "uint64_t""'");
   } 
-  arg2 = static_cast< uint64_t >(val2);res3 = SWIG_AsCharPtrAndSize(args[2], &buf3, NULL, &alloc3);
+  arg2 = static_cast< uint64_t >(val2);res3 = SWIG_AsCharPtrAndSize(args[2], &buf3, &size3, &alloc3);
   if (!SWIG_IsOK(res3)) {
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "build_tx_out" "', argument " "3"" of type '" "char const *""'");
   }
-  arg3 = reinterpret_cast< char * >(buf3);res4 = SWIG_ConvertPtr(args[3], &argp4,SWIGTYPE_p_BlsctTokenId, 0 |  0 );
-  if (!SWIG_IsOK(res4)) {
-    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "build_tx_out" "', argument " "4"" of type '" "BlsctTokenId const *""'"); 
+  arg3 = reinterpret_cast< char * >(buf3);
+  arg4 = static_cast< size_t >(size3 - 1);res5 = SWIG_ConvertPtr(args[3], &argp5,SWIGTYPE_p_BlsctTokenId, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "build_tx_out" "', argument " "5"" of type '" "BlsctTokenId const *""'"); 
   }
-  arg4 = reinterpret_cast< BlsctTokenId * >(argp4);ecode5 = SWIG_AsVal_int(args[4], &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "build_tx_out" "', argument " "5"" of type '" "TxOutputType""'");
-  } 
-  arg5 = static_cast< TxOutputType >(val5);ecode6 = SWIG_AsVal_unsigned_SS_long_SS_long(args[5], &val6);
+  arg5 = reinterpret_cast< BlsctTokenId * >(argp5);ecode6 = SWIG_AsVal_int(args[4], &val6);
   if (!SWIG_IsOK(ecode6)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "build_tx_out" "', argument " "6"" of type '" "uint64_t""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "build_tx_out" "', argument " "6"" of type '" "TxOutputType""'");
   } 
-  arg6 = static_cast< uint64_t >(val6);ecode7 = SWIG_AsVal_bool(args[6], &val7);
+  arg6 = static_cast< TxOutputType >(val6);ecode7 = SWIG_AsVal_unsigned_SS_long_SS_long(args[5], &val7);
   if (!SWIG_IsOK(ecode7)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "build_tx_out" "', argument " "7"" of type '" "bool""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "build_tx_out" "', argument " "7"" of type '" "uint64_t""'");
   } 
-  arg7 = static_cast< bool >(val7);res8 = SWIG_ConvertPtr(args[7], &argp8,SWIGTYPE_p_BlsctScalar, 0 |  0 );
-  if (!SWIG_IsOK(res8)) {
-    SWIG_exception_fail(SWIG_ArgError(res8), "in method '" "build_tx_out" "', argument " "8"" of type '" "BlsctScalar const *""'"); 
+  arg7 = static_cast< uint64_t >(val7);ecode8 = SWIG_AsVal_bool(args[6], &val8);
+  if (!SWIG_IsOK(ecode8)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "build_tx_out" "', argument " "8"" of type '" "bool""'");
+  } 
+  arg8 = static_cast< bool >(val8);res9 = SWIG_ConvertPtr(args[7], &argp9,SWIGTYPE_p_BlsctScalar, 0 |  0 );
+  if (!SWIG_IsOK(res9)) {
+    SWIG_exception_fail(SWIG_ArgError(res9), "in method '" "build_tx_out" "', argument " "9"" of type '" "BlsctScalar const *""'"); 
   }
-  arg8 = reinterpret_cast< BlsctScalar * >(argp8);result = (BlsctRetVal *)build_tx_out((BlsctSubAddr const *)arg1,arg2,(char const *)arg3,(BlsctTokenId const *)arg4,arg5,arg6,arg7,(BlsctScalar const *)arg8);
+  arg9 = reinterpret_cast< BlsctScalar * >(argp9);result = (BlsctRetVal *)build_tx_out((BlsctSubAddr const *)arg1,arg2,(char const *)arg3,SWIG_STD_MOVE(*(&arg4)),(BlsctTokenId const *)arg5,arg6,arg7,arg8,(BlsctScalar const *)arg9);
   jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_BlsctRetVal, 0 |  0 );
   
   

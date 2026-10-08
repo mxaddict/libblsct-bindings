@@ -1224,6 +1224,7 @@ export function buildTxOut(
       subAddr as number,
       BigInt(amount),
       memoPtr,
+      module.lengthBytesUTF8(memo),
       tokenId as number,
       outputType,
       BigInt(minStake),

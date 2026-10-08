@@ -27,6 +27,7 @@ from blsct import (
   ViewTag,
 )
 
+import pytest
 import secrets
 
 def test_chain():
@@ -403,3 +404,16 @@ def test_ctx_out_keys_are_points():
   assert len(payment) == 1
   expected_blinding = spend_pk.get_point().scalar_multiply(blinding_key).serialize()
   assert payment[0].get_blinding_key().serialize() == expected_blinding
+
+def _memo_dest():
+  return SubAddr.from_double_public_key(
+    DoublePublicKey.from_view_and_spend_keys(PublicKey(), PublicKey())
+  )
+
+def test_tx_out_memo_multi_byte_round_trips():
+  memo = 'navio ナビオ \U0001F680'
+  assert TxOut(_memo_dest(), 12345, memo).get_memo() == memo
+
+def test_tx_out_memo_with_nul_is_rejected():
+  with pytest.raises(ValueError):
+    TxOut(_memo_dest(), 12345, 'nav\x00io')

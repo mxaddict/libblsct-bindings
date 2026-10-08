@@ -141,7 +141,7 @@ export interface BlsctWasmModule {
   _set_tx_out_transcript_v2(txOut: number, transcriptV2: number): void;
   _get_tx_out_transcript_v2(txOut: number): number;
   _build_tx_in(amount: bigint, gamma: number, spendingKey: number, tokenId: number, outPoint: number, stakedCommitment: boolean, rbf: boolean): number;
-  _build_tx_out(dest: number, amount: bigint, memo: number, tokenId: number, outputType: number, minStake: bigint, subtractFeeFromAmount: boolean, blindingKey: number): number;
+  _build_tx_out(dest: number, amount: bigint, memo: number, memoLen: number, tokenId: number, outputType: number, minStake: bigint, subtractFeeFromAmount: boolean, blindingKey: number): number;
   _build_ctx(txIns: number, txOuts: number): number;
   _build_ctx_with_change(txIns: number, txOuts: number, changeAddr: number): number;
   _get_ctx_id(ctx: number): number;

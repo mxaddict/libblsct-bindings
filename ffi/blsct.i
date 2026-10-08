@@ -548,10 +548,14 @@ export bool get_tx_in_staked_commitment(const BlsctTxIn* tx_in);
 export bool get_tx_in_rbf(const BlsctTxIn* tx_in);
 
 // tx out
+// The memo crosses as one string argument; SWIG passes its UTF-8 byte length
+// alongside, so core can reject an embedded NUL instead of truncating there.
+%apply (const char *STRING, size_t LENGTH) { (const char* memo, size_t memo_len) };
 export BlsctRetVal* build_tx_out(
     const BlsctSubAddr* blsct_dest,
     const uint64_t amount,
-    const char* in_memo_c_str,
+    const char* memo,
+    size_t memo_len,
     const BlsctTokenId* blsct_token_id,
     const TxOutputType output_type,
     const uint64_t min_stake,

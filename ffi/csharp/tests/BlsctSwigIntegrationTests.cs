@@ -1293,6 +1293,47 @@ public sealed class BlsctSwigIntegrationTests : IClassFixture<BlsctTestFixture>
         BlsctFree.FreeObj(txOutVal);
     }
 
+    [Theory]
+    [InlineData("navio ナビオ \U0001F680", true)]
+    [InlineData("nav\0io", false)]
+    public void TxOut_MemoCrossesWithItsByteLength(string memo, bool accepted)
+    {
+        var rvSeed = blsct.gen_scalar(12345);
+        var seed = blsct.cast_to_scalar(AssertSuccess(rvSeed));
+        var childKey = blsct.from_seed_to_child_key(seed);
+        var txKey = blsct.from_child_key_to_tx_key(childKey);
+        var viewKey = blsct.from_tx_key_to_view_key(txKey);
+        var spendKey = blsct.from_tx_key_to_spending_key(txKey);
+        var spendPk = blsct.scalar_to_pub_key(spendKey);
+        var subAddrId = blsct.gen_sub_addr_id(0, 0);
+        var subAddr = blsct.derive_sub_address(viewKey, spendPk, subAddrId);
+        var rvTid = blsct.gen_default_token_id();
+        var tokenId = blsct.cast_to_token_id(AssertSuccess(rvTid));
+        var rvBlindKey = blsct.gen_random_scalar();
+        var blindKey = blsct.cast_to_scalar(AssertSuccess(rvBlindKey));
+
+        var rvTxOut = blsct.build_tx_out(subAddr, 12345, memo, tokenId,
+            TxOutputType.Normal, 0, false, blindKey);
+        if (accepted)
+        {
+            var txOutVal = AssertSuccess(rvTxOut);
+            Assert.Equal(memo, blsct.get_tx_out_memo(blsct.cast_to_tx_out(txOutVal)));
+            BlsctFree.FreeObj(txOutVal);
+        }
+        else
+        {
+            Assert.NotEqual(0, (int)rvTxOut.result);
+        }
+
+        BlsctFree.FreeObj(rvSeed.value);
+        BlsctFree.FreeObj(rvTid.value);
+        BlsctFree.FreeObj(rvBlindKey.value);
+        BlsctFree.FreeObj(spendKey);
+        BlsctFree.FreeObj(spendPk);
+        BlsctFree.FreeObj(subAddrId);
+        BlsctFree.FreeObj(subAddr);
+    }
+
     // =========================================================================
     // Unsigned Transaction build/sign
     // =========================================================================

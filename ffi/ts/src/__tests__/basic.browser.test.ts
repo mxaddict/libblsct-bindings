@@ -336,6 +336,20 @@ describe('Browser WASM Module', () => {
       expect(txOut).toBeDefined();
     });
 
+    it('should round-trip a memo with multi-byte characters', () => {
+      requireWasm();
+      const subAddr = blsctBrowser.SubAddr.fromDoublePublicKey(new blsctBrowser.DoublePublicKey());
+      const memo = 'navio ナビオ \u{1F680}';
+      const txOut = blsctBrowser.TxOut.generate(subAddr, 1000, memo);
+      expect(txOut.getMemo()).toBe(memo);
+    });
+
+    it('should reject a memo with an embedded NUL', () => {
+      requireWasm();
+      const subAddr = blsctBrowser.SubAddr.fromDoublePublicKey(new blsctBrowser.DoublePublicKey());
+      expect(() => blsctBrowser.TxOut.generate(subAddr, 1000, 'nav\0io')).toThrow();
+    });
+
     it('should aggregate signed transactions', () => {
       requireWasm();
 
