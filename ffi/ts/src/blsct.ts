@@ -1078,6 +1078,40 @@ export const signUnsignedTransaction = (unsignedTx: any): BlsctRetVal => {
   return blsct.sign_unsigned_transaction(unsignedTx)
 }
 
+// stake delegation
+export const setUnsignedOutputStakeDelegation = (
+  unsignedOutput: any,
+  dest: any,
+  delegateKey: any,
+  rewardAddress: string,
+): boolean => {
+  return blsct.set_unsigned_output_stake_delegation(unsignedOutput, dest, delegateKey, rewardAddress)
+}
+export const isStakeDelegationData = (data: any, dataLen: number): boolean => {
+  return blsct.is_stake_delegation_data(data, dataLen)
+}
+export const buildStakeDelegationData = (
+  value: number,
+  gamma: any,
+  rewardAddress: string,
+  delegateKey: any,
+  nonce: any,
+): BlsctRetVal => {
+  return blsct.build_stake_delegation_data(value, gamma, rewardAddress, delegateKey, nonce)
+}
+export const recoverStakeDelegationOwnerInfo = (data: any, dataLen: number, nonce: any): BlsctRetVal => {
+  return blsct.recover_stake_delegation_owner_info(data, dataLen, nonce)
+}
+export const deleteStakeDelegationOwnerInfo = (ownerInfo: any): void => {
+  blsct.delete_stake_delegation_owner_info(ownerInfo)
+}
+export const getStakeDelegationOwnerInfoDelegateKey = (ownerInfo: any): any => {
+  return blsct.get_stake_delegation_owner_info_delegate_key(ownerInfo)
+}
+export const getStakeDelegationOwnerInfoRewardAddress = (ownerInfo: any): string => {
+  return blsct.get_stake_delegation_owner_info_reward_address(ownerInfo)
+}
+
 // view tag
 export const calcViewTag = (
   blindingPubKey: any,

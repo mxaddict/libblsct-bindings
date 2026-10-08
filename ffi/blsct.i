@@ -112,6 +112,17 @@
     auto vec = static_cast<std::vector<BlsctAmountRecoveryResult>*>(vp_amt_recovery_req_vec);
     return static_cast<void*>(&vec->at(idx).gamma);
   }
+
+  // Field readers for the BlsctStakeDelegationOwnerInfo that
+  // recover_stake_delegation_owner_info returns. Both point into the struct,
+  // so copy them before delete_stake_delegation_owner_info.
+  const BlsctPoint* get_stake_delegation_owner_info_delegate_key(const void* vp_owner_info) {
+    return &static_cast<const BlsctStakeDelegationOwnerInfo*>(vp_owner_info)->delegate_key;
+  }
+
+  const char* get_stake_delegation_owner_info_reward_address(const void* vp_owner_info) {
+    return static_cast<const BlsctStakeDelegationOwnerInfo*>(vp_owner_info)->reward_address;
+  }
 %}
 
 %include "stdint.i"
@@ -732,6 +743,29 @@ export BlsctPoint* calc_nonce(
     const BlsctPubKey* blsct_blinding_pub_key,
     const BlsctScalar* view_key
 );
+
+// stake delegation (cold staking): attach, detect and open the encrypted
+// payload that delegates a staked output to a third-party staker.
+export bool set_unsigned_output_stake_delegation(
+    void* vp_unsigned_output,
+    const BlsctSubAddr* blsct_dest,
+    const BlsctPoint* blsct_delegate_key,
+    const char* reward_address
+);
+export bool is_stake_delegation_data(const uint8_t* data, size_t data_len);
+export BlsctRetVal* build_stake_delegation_data(
+    uint64_t value,
+    const BlsctScalar* gamma,
+    const char* reward_address,
+    const BlsctPoint* delegate_key,
+    const BlsctPoint* nonce
+);
+export BlsctRetVal* recover_stake_delegation_owner_info(
+    const uint8_t* data,
+    size_t data_len,
+    const BlsctPoint* nonce
+);
+export void delete_stake_delegation_owner_info(void* vp_owner_info);
 
 // Misc helper functions
 export uint8_t* hex_to_malloced_buf(const char* hex);

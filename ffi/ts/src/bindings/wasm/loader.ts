@@ -240,6 +240,13 @@ export interface BlsctWasmModule {
   _serialize_unsigned_transaction(unsignedTx: number): number;
   _deserialize_unsigned_transaction(hex: number): number;
   _sign_unsigned_transaction(unsignedTx: number): number;
+
+  // Stake delegation
+  _set_unsigned_output_stake_delegation(unsignedOutput: number, dest: number, delegateKey: number, rewardAddress: number): boolean;
+  _is_stake_delegation_data(data: number, dataLen: number): boolean;
+  _build_stake_delegation_data(value: bigint, gamma: number, rewardAddress: number, delegateKey: number, nonce: number): number;
+  _recover_stake_delegation_owner_info(data: number, dataLen: number, nonce: number): number;
+  _delete_stake_delegation_owner_info(ownerInfo: number): void;
   
   // Signature operations
   _sign_message(privKey: number, msg: number): number;

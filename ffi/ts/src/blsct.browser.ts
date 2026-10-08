@@ -1470,6 +1470,100 @@ export function getTxOutBlindingKey(obj: unknown): unknown {
 }
 
 // ============================================================================
+// Stake Delegation Functions
+// ============================================================================
+
+export function setUnsignedOutputStakeDelegation(
+  unsignedOutput: unknown,
+  dest: unknown,
+  delegateKey: unknown,
+  rewardAddress: string
+): boolean {
+  const module = getBlsctModule();
+  const rewardAddressPtr = allocString(rewardAddress);
+  try {
+    const result = module._set_unsigned_output_stake_delegation(
+      unsignedOutput as number,
+      dest as number,
+      delegateKey as number,
+      rewardAddressPtr
+    ) as unknown as number;
+    return result !== 0;
+  } finally {
+    freePtr(rewardAddressPtr);
+  }
+}
+
+export function isStakeDelegationData(data: unknown, dataLen: number): boolean {
+  const module = getBlsctModule();
+  const result = module._is_stake_delegation_data(data as number, dataLen) as unknown as number;
+  return result !== 0;
+}
+
+export function buildStakeDelegationData(
+  value: number,
+  gamma: unknown,
+  rewardAddress: string,
+  delegateKey: unknown,
+  nonce: unknown
+): BlsctRetVal {
+  const module = getBlsctModule();
+  const rewardAddressPtr = allocString(rewardAddress);
+  try {
+    const resultPtr = module._build_stake_delegation_data(
+      BigInt(value),
+      gamma as number,
+      rewardAddressPtr,
+      delegateKey as number,
+      nonce as number
+    );
+    const result = parseRetVal(resultPtr);
+    freePtr(resultPtr);
+    return {
+      result: result.success ? 0 : (result.errorCode ?? 1),
+      value: result.value,
+      value_size: result.valueSize ?? 0,
+    };
+  } finally {
+    freePtr(rewardAddressPtr);
+  }
+}
+
+export function recoverStakeDelegationOwnerInfo(data: unknown, dataLen: number, nonce: unknown): BlsctRetVal {
+  const module = getBlsctModule();
+  const resultPtr = module._recover_stake_delegation_owner_info(data as number, dataLen, nonce as number);
+  const result = parseRetVal(resultPtr);
+  freePtr(resultPtr);
+  return {
+    result: result.success ? 0 : (result.errorCode ?? 1),
+    value: result.value,
+    value_size: result.valueSize ?? 0,
+  };
+}
+
+export function deleteStakeDelegationOwnerInfo(ownerInfo: unknown): void {
+  const module = getBlsctModule();
+  module._delete_stake_delegation_owner_info(ownerInfo as number);
+}
+
+// The native build reads BlsctStakeDelegationOwnerInfo { BlsctPoint
+// delegate_key; char* reward_address; } through accessors in ffi/blsct.i, which
+// the WASM module does not have, so the fields are read from memory here:
+// delegate_key is the first member and reward_address the wasm32 pointer right
+// after it (POINT_SIZE is a multiple of 4, so there is no padding between).
+const OWNER_INFO_REWARD_ADDRESS_OFFSET = POINT_SIZE;
+
+export function getStakeDelegationOwnerInfoDelegateKey(ownerInfo: unknown): unknown {
+  return ownerInfo;
+}
+
+export function getStakeDelegationOwnerInfoRewardAddress(ownerInfo: unknown): string {
+  const module = getBlsctModule();
+  const strPtr = module.HEAPU32[((ownerInfo as number) + OWNER_INFO_REWARD_ADDRESS_OFFSET) >> 2];
+  return readString(strPtr);
+}
+
+// ============================================================================
 // Generic String Map Helpers
 // ============================================================================
 

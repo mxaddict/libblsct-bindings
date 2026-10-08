@@ -327,6 +327,8 @@ const getCfg = () => {
       'build_unsigned_mint_token_output_with_transcript',
       'build_unsigned_mint_nft_output',
       'sign_unsigned_transaction',
+      'set_unsigned_output_stake_delegation',
+      'recover_stake_delegation_owner_info',
       'aggregate_transactions',
     ],
   }

@@ -542,6 +542,13 @@ const EXPORTED_FUNCTIONS = [
   '_deserialize_unsigned_transaction',
   '_sign_unsigned_transaction',
 
+  // Stake delegation
+  '_set_unsigned_output_stake_delegation',
+  '_is_stake_delegation_data',
+  '_build_stake_delegation_data',
+  '_recover_stake_delegation_owner_info',
+  '_delete_stake_delegation_owner_info',
+
   // Signature operations
   '_sign_message',
   '_verify_msg_sig',

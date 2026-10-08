@@ -401,6 +401,55 @@ describe('Browser WASM Module', () => {
     });
   });
 
+  describe('Stake Delegation', () => {
+    const STAKE = 1_000_000_000_000;
+
+    const genDest = () =>
+      blsctBrowser.SubAddr.generate(
+        blsctBrowser.Scalar.random(),
+        blsctBrowser.PublicKey.random(),
+        blsctBrowser.SubAddrId.generate(0, 0)
+      );
+
+    it('should open a delegation payload to its owner', () => {
+      requireWasm();
+      const delegateKey = blsctBrowser.Point.random();
+      const nonce = blsctBrowser.Point.random();
+      const dataHex = blsctBrowser.buildStakeDelegationDataHex(
+        STAKE, blsctBrowser.Scalar.random(), 'reward-address', delegateKey, nonce
+      );
+
+      expect(blsctBrowser.isStakeDelegationDataHex(dataHex)).toBe(true);
+      expect(blsctBrowser.isStakeDelegationDataHex('00ff')).toBe(false);
+      // Reads both fields of the owner-info struct from WASM memory.
+      const info = blsctBrowser.parseStakeDelegationOwnerInfo(dataHex, nonce);
+      expect(info.delegateKey.equals(delegateKey)).toBe(true);
+      expect(info.rewardAddress).toBe('reward-address');
+      expect(() =>
+        blsctBrowser.parseStakeDelegationOwnerInfo(dataHex, blsctBrowser.Point.random())
+      ).toThrow();
+    });
+
+    it('should delegate a staked output and refuse a normal one', () => {
+      requireWasm();
+      const dest = genDest();
+      const genOutput = (outputType: number) =>
+        blsctBrowser.UnsignedOutput.fromTxOut(
+          blsctBrowser.TxOut.generate(dest, STAKE, '', undefined, outputType, STAKE, false, blsctBrowser.Scalar.random())
+        );
+
+      const staked = genOutput(blsctBrowser.TxOutputType.StakedCommitment);
+      const before = staked.serialize();
+      staked.setStakeDelegation(dest, blsctBrowser.Point.random(), 'reward-address');
+      expect(staked.serialize()).not.toBe(before);
+
+      const normal = genOutput(blsctBrowser.TxOutputType.Normal);
+      expect(() =>
+        normal.setStakeDelegation(dest, blsctBrowser.Point.random(), 'reward-address')
+      ).toThrow();
+    });
+  });
+
   describe('Chain Configuration', () => {
     it('should get and set chain', () => {
       requireWasm();

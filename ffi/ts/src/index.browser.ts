@@ -26,6 +26,7 @@ export * from './rangeProof.js';
 export * from './scalar.js';
 export * from './script.js';
 export * from './signature.js';
+export * from './stakeDelegation.js';
 export * from './subAddr.js';
 export * from './subAddrId.js';
 export * from './tokenId.js';
