@@ -440,6 +440,11 @@ extern "C" {
 
   pub fn deserialize_vector_predicate(hex: *const c_char) -> *mut BlsctRetVal;
 
+  pub fn get_data_predicate_data(
+    blsct_vector_predicate: *const BlsctVectorPredicate,
+    obj_size: usize,
+  ) -> *mut BlsctRetVal;
+
   // Stake delegation
   pub fn is_stake_delegation_data(data: *const u8, data_len: usize) -> bool;
   pub fn build_stake_delegation_data(
