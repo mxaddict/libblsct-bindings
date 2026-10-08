@@ -18,7 +18,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # triplet; the shared library has to match or the link fails.
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 
-find_package(SWIG 4.1 REQUIRED)
+find_package(SWIG 4.3 REQUIRED)
 
 set(CSHARP_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 set(SWIG_OUT "${CMAKE_CURRENT_BINARY_DIR}/swig")

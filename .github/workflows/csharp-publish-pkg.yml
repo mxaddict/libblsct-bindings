@@ -57,9 +57,10 @@ jobs:
             10.0.x
 
       - name: Install SWIG
+        # apt's SWIG (4.2.0) predates the C# typemaps blsct.i needs.
         run: |
-          sudo apt-get update
-          sudo apt-get install -y swig
+          pipx install 'swig>=4.3'
+          swig -version
 
       - name: Download native artifacts
         uses: actions/download-artifact@v8

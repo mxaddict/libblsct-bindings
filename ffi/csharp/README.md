@@ -107,10 +107,10 @@ clean them up.
 
 It builds libblsct from the navio-core commit pinned in `ffi/navio-core.sha`,
 links the SWIG wrapper against it and leaves `blsct.dll`, `libblsct.so` or
-`libblsct.dylib` in `ffi/csharp/native/out`. It needs CMake, git, SWIG and a
-C++20 compiler (Visual Studio 2022 on Windows). Set `BLSCT_LOCAL_NAVIO_CORE=1`
-to build an existing checkout in `ffi/csharp/navio-core` as-is instead of the
-pinned commit.
+`libblsct.dylib` in `ffi/csharp/native/out`. It needs CMake, git, SWIG 4.3.0 or
+later and a C++20 compiler (Visual Studio 2022 on Windows). Set
+`BLSCT_LOCAL_NAVIO_CORE=1` to build an existing checkout in
+`ffi/csharp/navio-core` as-is instead of the pinned commit.
 
 ## Running tests
 
