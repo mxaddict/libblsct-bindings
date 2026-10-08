@@ -303,6 +303,9 @@ export const void* get_ctx_out_at(const void* vp_ctx_outs, const size_t i);
 export bool are_ctx_out_equal(const void* vp_a, const void* vp_b);
 export uint64_t get_ctx_out_value(const void* vp_ctx_out);
 export const BlsctScript* get_ctx_out_script_pub_key(const void* vp_ctx_out);
+// The whole scriptPubKey in hex. BlsctScript above holds only SCRIPT_SIZE
+// bytes, which cuts off longer scripts such as a staked commitment's.
+export const char* get_ctx_out_script_pub_key_hex(const void* vp_ctx_out);
 export const BlsctTokenId* get_ctx_out_token_id(const void* vp_ctx_out);
 export BlsctRetVal* get_ctx_out_vector_predicate(const void* vp_ctx_out);
 

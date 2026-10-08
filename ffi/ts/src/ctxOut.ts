@@ -6,6 +6,7 @@ import {
   getCTxOutEphemeralKey,
   getCTxOutRangeProof,
   getCTxOutScriptPubkey,
+  getCTxOutScriptPubKeyHex,
   getCTxOutSpendingKey,
   getCTxOutTokenId,
   getCTxOutValue,
@@ -45,6 +46,16 @@ export class CTxOut {
   getScriptPubKey(): Script {
     const obj = getCTxOutScriptPubkey(this.obj)
     return Script.fromObj(obj)
+  }
+
+  /** Returns the whole `scriptPubKey` of the output in hex. Unlike
+   * {@link getScriptPubKey}, which holds a fixed-size script, it is not cut
+   * off, so a staked commitment's script (`OP_STAKED_COMMITMENT` ...
+   * `OP_TRUE`) reads in full.
+   * @returns The `scriptPubKey` in hex, empty when the output has none.
+   */
+  getScriptPubKeyHex(): string {
+    return getCTxOutScriptPubKeyHex(this.obj)
   }
 
   /** Returns the token ID associated with the transaction output.

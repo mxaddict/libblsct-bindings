@@ -122,6 +122,13 @@ describe('cold staking end to end', () => {
       return predicateHex !== '' && getPredicateType(predicateHex) === BlsctPredicateType.BlsctDataPredicateType
     })
     expect(delegated).toHaveLength(1)
+    // A staked commitment's script: OP_STAKED_COMMITMENT, OP_PUSHDATA2 with
+    // the commitment's range proof, OP_TRUE. No other output has one.
+    const scriptHexes = Array.from({ length: outs.size() }, (_, i) => outs.at(i).getScriptPubKeyHex())
+    const stakedScript = delegated[0].getScriptPubKeyHex()
+    expect(stakedScript).toMatch(/^b94d[0-9a-f]+51$/)
+    expect(stakedScript.length).toBeGreaterThan(2 * 28)
+    expect(scriptHexes.filter(hex => hex.startsWith('b9'))).toEqual([stakedScript])
     const dataHex = parseDataPredicateData(delegated[0].getVectorPredicate())
     expect(isStakeDelegationDataHex(dataHex)).toBe(true)
 

@@ -1334,6 +1334,14 @@ export function getCTxOutScriptPubkey(obj: unknown): unknown {
   return module._get_ctx_out_script_pub_key(obj as number);
 }
 
+export function getCTxOutScriptPubKeyHex(obj: unknown): string {
+  const module = getBlsctModule();
+  const strPtr = module._get_ctx_out_script_pub_key_hex(obj as number);
+  const str = readString(strPtr);
+  freePtr(strPtr);
+  return str;
+}
+
 export function getCTxOutTokenId(obj: unknown): unknown {
   const module = getBlsctModule();
   return module._get_ctx_out_token_id(obj as number);

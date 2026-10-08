@@ -476,6 +476,7 @@ const EXPORTED_FUNCTIONS = [
   // CTxOut accessors
   '_get_ctx_out_value',
   '_get_ctx_out_script_pub_key',
+  '_get_ctx_out_script_pub_key_hex',
   '_get_ctx_out_token_id',
   '_get_ctx_out_vector_predicate',
   '_get_ctx_out_spending_key',

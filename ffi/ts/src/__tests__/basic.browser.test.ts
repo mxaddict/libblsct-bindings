@@ -484,6 +484,7 @@ describe('Browser WASM Module', () => {
           blsctBrowser.getPredicateType(predicateHex) === blsctBrowser.BlsctPredicateType.BlsctDataPredicateType;
       });
       expect(delegated).toHaveLength(1);
+      expect(delegated[0].getScriptPubKeyHex()).toMatch(/^b94d[0-9a-f]+51$/);
       const dataHex = blsctBrowser.parseDataPredicateData(delegated[0].getVectorPredicate());
       const nonce = blsctBrowser.PublicKey.fromPoint(delegated[0].getBlindingKey())
         .generateNonce(viewKey)

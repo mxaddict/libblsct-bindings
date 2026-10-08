@@ -5200,6 +5200,31 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_get_ctx_out_script_pub_key_hex(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  void *arg1 = 0 ;
+  int res1 ;
+  char *result = 0 ;
+  
+  if (args.Length() < 1 || args.Length() > 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_get_ctx_out_script_pub_key_hex.");
+  
+  res1 = SWIG_ConvertPtr(args[0],SWIG_as_voidptrptr(&arg1), 0, 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "get_ctx_out_script_pub_key_hex" "', argument " "1"" of type '" "void const *""'"); 
+  }result = (char *)get_ctx_out_script_pub_key_hex((void const *)arg1);
+  jsresult = SWIG_FromCharPtr((const char *)result);
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_get_ctx_out_token_id(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
@@ -11296,6 +11321,7 @@ SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_at", _wrap_get_ctx_out_at, co
 SWIGV8_AddStaticFunction(exports_obj, "are_ctx_out_equal", _wrap_are_ctx_out_equal, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_value", _wrap_get_ctx_out_value, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_script_pub_key", _wrap_get_ctx_out_script_pub_key, context);
+SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_script_pub_key_hex", _wrap_get_ctx_out_script_pub_key_hex, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_token_id", _wrap_get_ctx_out_token_id, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_vector_predicate", _wrap_get_ctx_out_vector_predicate, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_spending_key", _wrap_get_ctx_out_spending_key, context);

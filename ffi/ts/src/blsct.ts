@@ -217,6 +217,9 @@ export const getCTxOutValue = (obj: any): bigint => {
 export const getCTxOutScriptPubkey = (obj: any): any => {
   return blsct.get_ctx_out_script_pub_key(obj)
 }
+export const getCTxOutScriptPubKeyHex = (obj: any): string => {
+  return blsct.get_ctx_out_script_pub_key_hex(obj) ?? ''
+}
 
 export const getCTxOutTokenId = (obj: any): any => {
   return blsct.get_ctx_out_token_id(obj)

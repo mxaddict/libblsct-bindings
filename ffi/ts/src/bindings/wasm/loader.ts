@@ -174,6 +174,7 @@ export interface BlsctWasmModule {
   // CTxOut accessors
   _get_ctx_out_value(ctxOut: number): bigint;
   _get_ctx_out_script_pub_key(ctxOut: number): number;
+  _get_ctx_out_script_pub_key_hex(ctxOut: number): number;
   _get_ctx_out_token_id(ctxOut: number): number;
   _get_ctx_out_vector_predicate(ctxOut: number): number;
   _get_ctx_out_spending_key(ctxOut: number): number;
