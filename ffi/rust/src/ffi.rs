@@ -27,6 +27,13 @@ pub struct BlsctAmountsRetVal {
 
 #[repr(C)]
 #[derive(Debug)]
+pub struct BlsctStakeDelegationOwnerInfo {
+  pub delegate_key: BlsctPoint,
+  pub reward_address: *mut c_char,
+}
+
+#[repr(C)]
+#[derive(Debug)]
 pub struct BlsctCTxRetVal {
   pub result: u8,
   pub ctx: *mut c_void,
@@ -432,6 +439,22 @@ extern "C" {
   ) -> *const c_char;
 
   pub fn deserialize_vector_predicate(hex: *const c_char) -> *mut BlsctRetVal;
+
+  // Stake delegation
+  pub fn is_stake_delegation_data(data: *const u8, data_len: usize) -> bool;
+  pub fn build_stake_delegation_data(
+    value: u64,
+    gamma: *const BlsctScalar,
+    reward_address: *const c_char,
+    delegate_key: *const BlsctPoint,
+    nonce: *const BlsctPoint,
+  ) -> *mut BlsctRetVal;
+  pub fn recover_stake_delegation_owner_info(
+    data: *const u8,
+    data_len: usize,
+    nonce: *const BlsctPoint,
+  ) -> *mut BlsctRetVal;
+  pub fn delete_stake_delegation_owner_info(vp_owner_info: *mut c_void);
 
   // ViewTag
   pub fn calc_view_tag(blinding_pub_key: *const BlsctPubKey, view_key: *const BlsctScalar) -> u64;
