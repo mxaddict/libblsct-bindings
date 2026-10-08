@@ -329,6 +329,7 @@ const getCfg = () => {
       'sign_unsigned_transaction',
       'set_unsigned_output_stake_delegation',
       'recover_stake_delegation_owner_info',
+      'get_data_predicate_data',
       'aggregate_transactions',
     ],
   }

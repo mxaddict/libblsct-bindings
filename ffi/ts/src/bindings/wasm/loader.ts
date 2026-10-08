@@ -196,6 +196,7 @@ export interface BlsctWasmModule {
   _get_mint_nft_predicate_public_key(predicate: number, objSize: number): number;
   _get_mint_nft_predicate_nft_id(predicate: number, objSize: number): bigint;
   _get_mint_nft_predicate_metadata(predicate: number, objSize: number): number;
+  _get_data_predicate_data(predicate: number, objSize: number): number;
   
   // TxIn accessors
   _get_tx_in_amount(txIn: number): bigint;

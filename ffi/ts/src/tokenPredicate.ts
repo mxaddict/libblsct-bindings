@@ -3,10 +3,12 @@ import {
   buildCreateTokenPredicate as buildCreateTokenPredicateRaw,
   buildMintNftPredicate as buildMintNftPredicateRaw,
   buildMintTokenPredicate as buildMintTokenPredicateRaw,
+  castToUint8_tPtr,
   castToVectorPredicate,
   deserializeVectorPredicate,
   freeObj,
   getCreateTokenPredicateTokenInfo as getCreateTokenPredicateTokenInfoRaw,
+  getDataPredicateData as getDataPredicateDataRaw,
   getMintNftPredicateMetadata as getMintNftPredicateMetadataRaw,
   getMintNftPredicateNftId as getMintNftPredicateNftIdRaw,
   getMintNftPredicatePublicKey as getMintNftPredicatePublicKeyRaw,
@@ -14,6 +16,7 @@ import {
   getMintTokenPredicatePublicKey as getMintTokenPredicatePublicKeyRaw,
   getVectorPredicateType as getVectorPredicateTypeRaw,
   serializeVectorPredicate,
+  toHex,
 } from './blsct'
 import { PublicKey } from './keys/publicKey'
 import { freeNativeStringMap, makeNativeStringMap, MetadataMap, readNativeStringMap } from './stringMapUtil'
@@ -137,5 +140,24 @@ export const parseMintNftPredicateMetadata = (predicateHex: string): MetadataMap
     } finally {
       freeNativeStringMap(nativeMap)
     }
+  })
+}
+
+/** Returns the payload of a DATA predicate as hex, without the operation
+ * byte and length prefix that frame it in `predicateHex` (for example a
+ * stake-delegation payload, see `parseStakeDelegationOwnerInfo`).
+ * @throws If `predicateHex` is not a DATA predicate.
+ */
+export const parseDataPredicateData = (predicateHex: string): string => {
+  return parsePredicateHex(predicateHex, (predicate, size) => {
+    const rv = getDataPredicateDataRaw(predicate, size)
+    if (rv.result !== 0) {
+      freeObj(rv)
+      throw new Error(`Failed to parse DATA predicate. Error code = ${rv.result}`)
+    }
+    const dataHex = rv.value_size === 0 ? '' : toHex(castToUint8_tPtr(rv.value), rv.value_size)
+    freeObj(rv.value)
+    freeObj(rv)
+    return dataHex
   })
 }

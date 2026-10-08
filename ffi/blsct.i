@@ -642,6 +642,12 @@ export void* get_mint_nft_predicate_metadata(
   const BlsctVectorPredicate* blsct_vector_predicate,
   size_t obj_size
 );
+// The payload of a DATA predicate, without its operation byte and length
+// prefix; fails when the predicate is not DATA.
+export BlsctRetVal* get_data_predicate_data(
+  const BlsctVectorPredicate* blsct_vector_predicate,
+  size_t obj_size
+);
 
 // unsigned input/output/transaction helpers
 export BlsctRetVal* build_unsigned_input(const BlsctTxIn* tx_in);

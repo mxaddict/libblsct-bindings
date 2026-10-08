@@ -1,5 +1,8 @@
-import { TxOutputType } from '../blsct'
+import { BlsctPredicateType, TxOutputType } from '../blsct'
+import { CTx } from '../ctx'
+import { CTxId } from '../ctxId'
 import { PublicKey } from '../keys/publicKey'
+import { OutPoint } from '../outPoint'
 import { Point } from '../point'
 import { Scalar } from '../scalar'
 import {
@@ -9,8 +12,17 @@ import {
 } from '../stakeDelegation'
 import { SubAddr } from '../subAddr'
 import { SubAddrId } from '../subAddrId'
+import { TokenId } from '../tokenId'
+import {
+  buildMintTokenPredicateHex,
+  getPredicateType,
+  parseDataPredicateData,
+} from '../tokenPredicate'
+import { TxIn } from '../txIn'
 import { TxOut } from '../txOut'
+import { UnsignedInput } from '../unsignedInput'
 import { UnsignedOutput } from '../unsignedOutput'
+import { UnsignedTransaction } from '../unsignedTransaction'
 
 const REWARD_ADDRESS = 'reward-address'
 const STAKE = 1_000_000_000_000
@@ -83,5 +95,45 @@ describe('UnsignedOutput.setStakeDelegation', () => {
     const dest = genDest()
     const output = genOutput(dest, TxOutputType.StakedCommitment)
     expect(() => output.setStakeDelegation(dest, Point.random(), '')).toThrow()
+  })
+})
+
+describe('cold staking end to end', () => {
+  test('the owner recovers the delegation from the signed transaction', () => {
+    const viewKey = Scalar.random()
+    const dest = SubAddr.generate(viewKey, PublicKey.random(), SubAddrId.generate(0, 0))
+    const delegateKey = Point.random()
+    const fee = 1000
+
+    const output = genOutput(dest, TxOutputType.StakedCommitment)
+    output.setStakeDelegation(dest, delegateKey, REWARD_ADDRESS)
+    const outPoint = OutPoint.generate(CTxId.deserialize('51'.repeat(32)))
+    const txIn = TxIn.generate(STAKE + fee, new Scalar(100), new Scalar(101), TokenId.default(), outPoint)
+    const unsignedTx = UnsignedTransaction.create()
+    unsignedTx.addInput(UnsignedInput.fromTxIn(txIn))
+    unsignedTx.addOutput(output)
+    unsignedTx.setFee(fee)
+    const ctx = CTx.deserialize(unsignedTx.sign())
+
+    // Scan the outputs as a syncing wallet would.
+    const outs = ctx.getCTxOuts()
+    const delegated = Array.from({ length: outs.size() }, (_, i) => outs.at(i)).filter(out => {
+      const predicateHex = out.getVectorPredicate()
+      return predicateHex !== '' && getPredicateType(predicateHex) === BlsctPredicateType.BlsctDataPredicateType
+    })
+    expect(delegated).toHaveLength(1)
+    const dataHex = parseDataPredicateData(delegated[0].getVectorPredicate())
+    expect(isStakeDelegationDataHex(dataHex)).toBe(true)
+
+    // The owner's nonce: the output's blinding key times the view key.
+    const nonce = PublicKey.fromPoint(delegated[0].getBlindingKey()).generateNonce(viewKey).getPoint()
+    const info = parseStakeDelegationOwnerInfo(dataHex, nonce)
+    expect(info.delegateKey.equals(delegateKey)).toBe(true)
+    expect(info.rewardAddress).toBe(REWARD_ADDRESS)
+  })
+
+  test('parseDataPredicateData refuses a predicate that is not DATA', () => {
+    const tokenPublicKey = PublicKey.random()
+    expect(() => parseDataPredicateData(buildMintTokenPredicateHex(tokenPublicKey, 5))).toThrow()
   })
 })

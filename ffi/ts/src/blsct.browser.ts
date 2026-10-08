@@ -1831,6 +1831,18 @@ export function getMintNftPredicateMetadata(vectorPredicate: unknown, objSize: n
   return module._get_mint_nft_predicate_metadata(vectorPredicate as number, objSize);
 }
 
+export function getDataPredicateData(vectorPredicate: unknown, objSize: number): BlsctRetVal {
+  const module = getBlsctModule();
+  const resultPtr = module._get_data_predicate_data(vectorPredicate as number, objSize);
+  const result = parseRetVal(resultPtr);
+  freePtr(resultPtr);
+  return {
+    result: result.success ? 0 : (result.errorCode ?? 1),
+    value: result.value,
+    value_size: result.valueSize ?? 0,
+  };
+}
+
 // ============================================================================
 // Unsigned Input/Output/Transaction Helpers
 // ============================================================================

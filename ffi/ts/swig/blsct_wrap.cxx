@@ -9097,6 +9097,41 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_get_data_predicate_data(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  BlsctVectorPredicate *arg1 = 0 ;
+  size_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  size_t val2 ;
+  int ecode2 = 0 ;
+  BlsctRetVal *result = 0 ;
+  
+  if (args.Length() < 2 || args.Length() > 2) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_get_data_predicate_data.");
+  
+  res1 = SWIG_ConvertPtr(args[0], &argp1,SWIGTYPE_p_BlsctVectorPredicate, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "get_data_predicate_data" "', argument " "1"" of type '" "BlsctVectorPredicate const *""'"); 
+  }
+  arg1 = reinterpret_cast< BlsctVectorPredicate * >(argp1);ecode2 = SWIG_AsVal_size_t(args[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "get_data_predicate_data" "', argument " "2"" of type '" "size_t""'");
+  } 
+  arg2 = static_cast< size_t >(val2);result = (BlsctRetVal *)get_data_predicate_data((BlsctVectorPredicate const *)arg1,SWIG_STD_MOVE(*(&arg2)));
+  jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_BlsctRetVal, 0 |  0 );
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_build_unsigned_input(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
@@ -11388,6 +11423,7 @@ SWIGV8_AddStaticFunction(exports_obj, "get_mint_token_predicate_amount", _wrap_g
 SWIGV8_AddStaticFunction(exports_obj, "get_mint_nft_predicate_public_key", _wrap_get_mint_nft_predicate_public_key, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_mint_nft_predicate_nft_id", _wrap_get_mint_nft_predicate_nft_id, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_mint_nft_predicate_metadata", _wrap_get_mint_nft_predicate_metadata, context);
+SWIGV8_AddStaticFunction(exports_obj, "get_data_predicate_data", _wrap_get_data_predicate_data, context);
 SWIGV8_AddStaticFunction(exports_obj, "build_unsigned_input", _wrap_build_unsigned_input, context);
 SWIGV8_AddStaticFunction(exports_obj, "delete_unsigned_input", _wrap_delete_unsigned_input, context);
 SWIGV8_AddStaticFunction(exports_obj, "serialize_unsigned_input", _wrap_serialize_unsigned_input, context);

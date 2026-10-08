@@ -498,6 +498,7 @@ const EXPORTED_FUNCTIONS = [
   '_get_mint_nft_predicate_public_key',
   '_get_mint_nft_predicate_nft_id',
   '_get_mint_nft_predicate_metadata',
+  '_get_data_predicate_data',
 
   // TxIn accessors
   '_get_tx_in_amount',

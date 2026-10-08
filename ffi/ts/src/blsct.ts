@@ -975,6 +975,9 @@ export const getMintNftPredicateNftId = (predicate: any, size: number): bigint =
 export const getMintNftPredicateMetadata = (predicate: any, size: number): any => {
   return blsct.get_mint_nft_predicate_metadata(predicate, size)
 }
+export const getDataPredicateData = (predicate: any, size: number): BlsctRetVal => {
+  return blsct.get_data_predicate_data(predicate, size)
+}
 
 // unsigned input/output/transaction helpers
 export const buildUnsignedInput = (txIn: any): BlsctRetVal => {

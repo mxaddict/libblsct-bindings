@@ -448,6 +448,50 @@ describe('Browser WASM Module', () => {
         normal.setStakeDelegation(dest, blsctBrowser.Point.random(), 'reward-address')
       ).toThrow();
     });
+
+    it('should let the owner recover the delegation from the signed transaction', () => {
+      requireWasm();
+      const viewKey = blsctBrowser.Scalar.random();
+      const dest = blsctBrowser.SubAddr.generate(
+        viewKey,
+        blsctBrowser.PublicKey.random(),
+        blsctBrowser.SubAddrId.generate(0, 0)
+      );
+      const delegateKey = blsctBrowser.Point.random();
+      const fee = 1000;
+
+      const output = blsctBrowser.UnsignedOutput.fromTxOut(
+        blsctBrowser.TxOut.generate(
+          dest, STAKE, '', undefined, blsctBrowser.TxOutputType.StakedCommitment, STAKE, false,
+          blsctBrowser.Scalar.random()
+        )
+      );
+      output.setStakeDelegation(dest, delegateKey, 'reward-address');
+      const outPoint = blsctBrowser.OutPoint.generate(blsctBrowser.CTxId.deserialize('52'.repeat(32)));
+      const txIn = blsctBrowser.TxIn.generate(
+        STAKE + fee, new blsctBrowser.Scalar(100), new blsctBrowser.Scalar(101),
+        blsctBrowser.TokenId.default(), outPoint, false, false
+      );
+      const unsignedTx = blsctBrowser.UnsignedTransaction.create();
+      unsignedTx.addInput(blsctBrowser.UnsignedInput.fromTxIn(txIn));
+      unsignedTx.addOutput(output);
+      unsignedTx.setFee(fee);
+      const outs = blsctBrowser.CTx.deserialize(unsignedTx.sign()).getCTxOuts();
+
+      const delegated = Array.from({ length: outs.size() }, (_, i) => outs.at(i)).filter((out: any) => {
+        const predicateHex = out.getVectorPredicate();
+        return predicateHex !== '' &&
+          blsctBrowser.getPredicateType(predicateHex) === blsctBrowser.BlsctPredicateType.BlsctDataPredicateType;
+      });
+      expect(delegated).toHaveLength(1);
+      const dataHex = blsctBrowser.parseDataPredicateData(delegated[0].getVectorPredicate());
+      const nonce = blsctBrowser.PublicKey.fromPoint(delegated[0].getBlindingKey())
+        .generateNonce(viewKey)
+        .getPoint();
+      const info = blsctBrowser.parseStakeDelegationOwnerInfo(dataHex, nonce);
+      expect(info.delegateKey.equals(delegateKey)).toBe(true);
+      expect(info.rewardAddress).toBe('reward-address');
+    });
   });
 
   describe('Chain Configuration', () => {
