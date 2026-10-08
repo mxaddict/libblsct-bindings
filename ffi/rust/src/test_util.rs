@@ -49,7 +49,14 @@ pub fn gen_ctx_actual(
 
   let tx_ins = vec![tx_in];
   let tx_outs = vec![tx_out];
-  CTx::new(&tx_ins, &tx_outs).unwrap()
+  // The fee is size-based, so the input over-funds it; the remainder is
+  // change, which libblsct only pays to an address someone owns.
+  let change_addr = {
+    let view_key = ChildKey::random().unwrap().to_tx_key().to_view_key();
+    let spending_pub_key = PublicKey::random().unwrap();
+    SubAddr::new(&view_key, &spending_pub_key, &SubAddrId::new(0, 0))
+  };
+  CTx::new(&tx_ins, &tx_outs, Some(&change_addr)).unwrap()
 }
 
 #[cfg(test)]

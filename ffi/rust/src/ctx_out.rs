@@ -4,13 +4,11 @@ use crate::{
     are_ctx_out_equal, get_ctx_out_blinding_key, get_ctx_out_ephemeral_key,
     get_ctx_out_range_proof, get_ctx_out_script_pub_key, get_ctx_out_spending_key,
     get_ctx_out_token_id, get_ctx_out_value, get_ctx_out_vector_predicate, get_ctx_out_view_tag,
-    BlsctPoint, BlsctRangeProof, BlsctRetVal, BlsctScalar, BlsctScript, BlsctTokenId,
-    BlsctVectorPredicate,
+    BlsctPoint, BlsctRangeProof, BlsctRetVal, BlsctScript, BlsctTokenId, BlsctVectorPredicate,
   },
   macros::impl_value_raw_const_obj,
   point::Point,
   range_proof::RangeProof,
-  scalar::Scalar,
   script::Script,
   token_id::TokenId,
   vector_predicate::VectorPredicate,
@@ -43,9 +41,9 @@ impl CTxOut {
     Ok(obj.into())
   }
 
-  pub fn blsct_data_spending_key(&self) -> Scalar {
+  pub fn blsct_data_spending_key(&self) -> Point {
     let c_obj = unsafe { get_ctx_out_spending_key(self.value()) };
-    BlsctObj::<Scalar, BlsctScalar>::from_c_obj(c_obj as *mut BlsctScalar).into()
+    BlsctObj::<Point, BlsctPoint>::from_c_obj(c_obj as *mut BlsctPoint).into()
   }
 
   pub fn blsct_data_ephemeral_key(&self) -> Point {
@@ -53,9 +51,9 @@ impl CTxOut {
     BlsctObj::<Point, BlsctPoint>::from_c_obj(c_obj as *mut BlsctPoint).into()
   }
 
-  pub fn blsct_data_blinding_key(&self) -> Scalar {
+  pub fn blsct_data_blinding_key(&self) -> Point {
     let c_obj = unsafe { get_ctx_out_blinding_key(self.value()) };
-    BlsctObj::<Scalar, BlsctScalar>::from_c_obj(c_obj as *mut BlsctScalar).into()
+    BlsctObj::<Point, BlsctPoint>::from_c_obj(c_obj as *mut BlsctPoint).into()
   }
 
   pub fn blsct_data_range_proof(&self) -> Result<RangeProof, blsct_obj::Error<'_>> {

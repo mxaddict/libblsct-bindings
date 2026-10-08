@@ -2,9 +2,10 @@ use crate::{
   blsct_obj::{self, BlsctObj},
   blsct_serde::BlsctSerde,
   ffi::{
-    buf_to_malloced_hex_c_str, build_tx_in, get_tx_in_amount, get_tx_in_gamma, get_tx_in_out_point,
-    get_tx_in_rbf, get_tx_in_spending_key, get_tx_in_staked_commitment, get_tx_in_token_id,
-    hex_to_malloced_buf, succ, BlsctOutPoint, BlsctRetVal, BlsctScalar, BlsctTokenId, BlsctTxIn,
+    blsct_succ, buf_to_malloced_hex_c_str, build_tx_in, get_tx_in_amount, get_tx_in_gamma,
+    get_tx_in_out_point, get_tx_in_rbf, get_tx_in_spending_key, get_tx_in_staked_commitment,
+    get_tx_in_token_id, hex_to_malloced_buf, BlsctOutPoint, BlsctRetVal, BlsctScalar, BlsctTokenId,
+    BlsctTxIn,
   },
   macros::{impl_clone, impl_display, impl_from_retval, impl_value},
   out_point::OutPoint,
@@ -96,7 +97,7 @@ impl BlsctSerde for TxIn {
       .expect("Malformed c-string found")
       .len()
       / 2;
-    succ(buf as *mut c_void, len)
+    blsct_succ(buf as *mut c_void, len)
   }
 }
 

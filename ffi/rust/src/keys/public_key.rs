@@ -2,7 +2,7 @@ use crate::{
   blsct_obj::{self, BlsctObj},
   blsct_serde::BlsctSerde,
   ffi::{
-    calc_nonce, err_bool, gen_random_public_key, get_public_key_point, point_to_public_key,
+    blsct_err, calc_nonce, gen_random_public_key, get_public_key_point, point_to_public_key,
     scalar_to_pub_key, serialize_point, BlsctPubKey, BlsctRetVal, BLSCT_FAILURE, PUBLIC_KEY_SIZE,
   },
   macros::{impl_clone, impl_display, impl_from_retval, impl_value},
@@ -57,10 +57,10 @@ impl BlsctSerde for PublicKey {
         let blsct_pub_key = unsafe { point_to_public_key(&buf) };
         match build_succ_blsct_ret_val::<PUBLIC_KEY_SIZE>(blsct_pub_key as *const u8) {
           Ok(rv) => rv,
-          Err(_) => err_bool(BLSCT_FAILURE),
+          Err(_) => blsct_err(BLSCT_FAILURE),
         }
       }
-      Err(_) => err_bool(BLSCT_FAILURE),
+      Err(_) => blsct_err(BLSCT_FAILURE),
     }
   }
 }

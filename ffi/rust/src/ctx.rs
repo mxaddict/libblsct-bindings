@@ -5,12 +5,13 @@ use crate::{
   ctx_ins::CTxIns,
   ctx_outs::CTxOuts,
   ffi::{
-    add_to_tx_in_vec, add_to_tx_out_vec, build_ctx, create_tx_in_vec, create_tx_out_vec,
-    delete_ctx, delete_tx_in_vec, delete_tx_out_vec, deserialize_ctx, deserialize_ctx_id, free_obj,
-    get_ctx_id, get_ctx_ins, get_ctx_outs, serialize_ctx, BlsctCTx, BlsctCTxId, BlsctRetVal,
-    BLSCT_IN_AMOUNT_ERROR, BLSCT_OUT_AMOUNT_ERROR,
+    add_to_tx_in_vec, add_to_tx_out_vec, build_ctx, build_ctx_with_change, create_tx_in_vec,
+    create_tx_out_vec, delete_ctx, delete_tx_in_vec, delete_tx_out_vec, deserialize_ctx,
+    deserialize_ctx_id, free_obj, get_ctx_id, get_ctx_ins, get_ctx_outs, serialize_ctx, BlsctCTx,
+    BlsctCTxId, BlsctRetVal, BLSCT_IN_AMOUNT_ERROR, BLSCT_OUT_AMOUNT_ERROR,
   },
   macros::{impl_clone, impl_display},
+  sub_addr::SubAddr,
   tx_in::TxIn,
   tx_out::TxOut,
 };
@@ -51,7 +52,15 @@ impl_display!(CTx);
 impl_clone!(CTx);
 
 impl CTx {
-  pub fn new(tx_ins: &Vec<TxIn>, tx_outs: &Vec<TxOut>) -> Result<Self, Error> {
+  /// Builds a transaction from `tx_ins` and `tx_outs`. Inputs that exceed the
+  /// outputs plus fee need `change_addr`, a self-owned address the change is
+  /// paid to; without one libblsct only builds when the inputs cover the
+  /// outputs and fee exactly.
+  pub fn new(
+    tx_ins: &Vec<TxIn>,
+    tx_outs: &Vec<TxOut>,
+    change_addr: Option<&SubAddr>,
+  ) -> Result<Self, Error> {
     unsafe {
       let vp_tx_ins = create_tx_in_vec();
       let vp_tx_outs = create_tx_out_vec();
@@ -62,7 +71,10 @@ impl CTx {
       for tx_out in tx_outs {
         add_to_tx_out_vec(vp_tx_outs, tx_out.value());
       }
-      let rv = build_ctx(vp_tx_ins, vp_tx_outs);
+      let rv = match change_addr {
+        Some(addr) => build_ctx_with_change(vp_tx_ins, vp_tx_outs, addr.value()),
+        None => build_ctx(vp_tx_ins, vp_tx_outs),
+      };
       if rv.is_null() {
         delete_tx_in_vec(vp_tx_ins);
         delete_tx_out_vec(vp_tx_outs);
@@ -157,6 +169,7 @@ mod tests {
     ffi::{get_ctx_ins_size, get_ctx_outs_size},
     initializer::init,
     keys::{double_public_key::DoublePublicKey, public_key::PublicKey},
+    point::Point,
     range_proof::RangeProof,
     scalar::Scalar,
     sub_addr::SubAddr,
@@ -202,9 +215,15 @@ mod tests {
     let ctx_outs = ctx.get_ctx_outs();
     let ctx_outs_size = unsafe { get_ctx_outs_size(ctx_outs.value()) };
     assert_eq!(ctx_outs_size, 3);
-    let out0 = ctx_outs.at(0).unwrap();
+    // libblsct shuffles the outputs; the payment is the one whose ephemeral
+    // key is G * blinding_key.
+    let expected_ephemeral = Point::base().unwrap().scalar_multiply(&blinding_key);
+    let payment = (0..ctx_outs.len())
+      .map(|i| ctx_outs.at(i).unwrap())
+      .find(|out| out.blsct_data_ephemeral_key() == expected_ephemeral)
+      .unwrap();
 
-    let rp = out0.blsct_data_range_proof().unwrap();
+    let rp = payment.blsct_data_range_proof().unwrap();
     let nonce = pk_view_key.get_point().scalar_multiply(&blinding_key);
     let req = AmountRecoveryReq::new(&rp, &nonce);
     let amounts = RangeProof::recover_amounts(vec![req]).unwrap();
@@ -213,6 +232,29 @@ mod tests {
     assert_eq!(amounts[0].is_succ, true);
     assert_eq!(amounts[0].amount, out_amount);
     assert_eq!(amounts[0].msg, msg);
+  }
+
+  #[test]
+  fn test_ctx_out_keys_are_points() {
+    init();
+    let pk_spend_key = PublicKey::random().unwrap();
+    let dpk =
+      DoublePublicKey::from_view_and_spend_keys(&PublicKey::random().unwrap(), &pk_spend_key)
+        .unwrap();
+    let destination: SubAddr = dpk.into();
+    let blinding_key = Scalar::random().unwrap();
+    let ctx = gen_ctx_actual(10000, "keys", &destination, &blinding_key);
+    let ctx_outs = ctx.get_ctx_outs();
+
+    let expected_ephemeral = Point::base().unwrap().scalar_multiply(&blinding_key);
+    let payment = (0..ctx_outs.len())
+      .map(|i| ctx_outs.at(i).unwrap())
+      .find(|out| out.blsct_data_ephemeral_key() == expected_ephemeral)
+      .unwrap();
+    // libblsct sets the payment's blinding key to spend_pk * blinding_key.
+    let expected_blinding = pk_spend_key.get_point().scalar_multiply(&blinding_key);
+    assert!(payment.blsct_data_blinding_key() == expected_blinding);
+    assert!(payment.blsct_data_spending_key().is_valid());
   }
 
   #[test]

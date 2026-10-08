@@ -29,8 +29,7 @@ impl Point {
   }
 
   pub fn is_valid(&self) -> bool {
-    let b = unsafe { is_valid_point(self.obj.as_ptr()) };
-    b != 0
+    unsafe { is_valid_point(self.obj.as_ptr()) }
   }
 
   pub fn scalar_multiply(&self, n: &Scalar) -> Self {

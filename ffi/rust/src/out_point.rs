@@ -2,11 +2,14 @@ use crate::{
   blsct_obj::{self, BlsctObj},
   blsct_serde::BlsctSerde,
   ctx_id::CTxId,
-  ffi::{deserialize_out_point, gen_out_point, serialize_out_point, BlsctOutPoint, BlsctRetVal},
+  ffi::{
+    deserialize_out_point, free_obj, gen_out_point, serialize_ctx_id, serialize_out_point,
+    BlsctOutPoint, BlsctRetVal,
+  },
   macros::{impl_clone, impl_display, impl_from_retval, impl_value},
 };
 use serde::{Deserialize, Serialize};
-use std::ffi::c_char;
+use std::ffi::{c_char, c_void};
 
 #[derive(Debug, Deserialize, Serialize, Eq)]
 pub struct OutPoint {
@@ -19,7 +22,13 @@ impl_clone!(OutPoint);
 
 impl OutPoint {
   pub fn new<'a>(ctx_id: &CTxId) -> Result<Self, blsct_obj::Error<'a>> {
-    let rv = unsafe { gen_out_point(ctx_id.value() as *const c_char) };
+    // gen_out_point takes the txid as a NUL-terminated hex string, not its bytes.
+    let ctx_id_hex = unsafe { serialize_ctx_id(ctx_id.value()) };
+    if ctx_id_hex.is_null() {
+      return Err(blsct_obj::Error::FailedToAllocateMemory("CTxId hex"));
+    }
+    let rv = unsafe { gen_out_point(ctx_id_hex) };
+    unsafe { free_obj(ctx_id_hex as *mut c_void) };
     let obj = BlsctObj::from_retval(rv)?;
     Ok(obj.into())
   }
