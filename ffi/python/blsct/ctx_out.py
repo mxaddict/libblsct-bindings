@@ -26,6 +26,14 @@ class CTxOut(ManagedObj, Serializable):
     obj = blsct.get_ctx_out_script_pub_key(self.value())
     return Script.from_obj(obj)
 
+  def get_script_pub_key_hex(self) -> str:
+    """
+    Get the whole scriptPubKey in hex. Unlike get_script_pub_key, which holds
+    a fixed-size script, it is not cut off, so a staked commitment's script
+    (OP_STAKED_COMMITMENT ... OP_TRUE) reads in full.
+    """
+    return blsct.get_ctx_out_script_pub_key_hex(self.value()) or ""
+
   def get_token_id(self) -> 'TokenId':
     """Get the token ID of the transaction output."""
     obj = blsct.get_ctx_out_token_id(self.value())

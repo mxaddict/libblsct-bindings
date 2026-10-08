@@ -521,6 +521,11 @@ def test_cold_staking_end_to_end():
   assert len(delegated) == 1
   out, data_hex = delegated[0]
   assert is_stake_delegation_data_hex(data_hex)
+  # A staked commitment's script: OP_STAKED_COMMITMENT, OP_PUSHDATA2 with the
+  # commitment's range proof, OP_TRUE. No other output has one.
+  staked_script = out.get_script_pub_key_hex()
+  assert staked_script.startswith('b94d') and staked_script.endswith('51')
+  assert [s for s in (o.get_script_pub_key_hex() for o in outs) if s.startswith('b9')] == [staked_script]
 
   # The owner's nonce: the output's blinding key times the view key.
   nonce = PublicKey.from_point(out.get_blinding_key()).generate_nonce(view_key).get_point()
