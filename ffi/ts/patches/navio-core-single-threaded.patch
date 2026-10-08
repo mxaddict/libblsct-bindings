@@ -1,5 +1,5 @@
 diff --git a/src/blsct/arith/blst/blst_scalar.cpp b/src/blsct/arith/blst/blst_scalar.cpp
-index 500f357aa4..33342e2dc9 100644
+index ebef2e4e89..c0d31a01be 100644
 --- a/src/blsct/arith/blst/blst_scalar.cpp
 +++ b/src/blsct/arith/blst/blst_scalar.cpp
 @@ -25,7 +25,7 @@
@@ -47,7 +47,7 @@ index a45f228c9d..285775234f 100644
      threads = std::min(threads, n);
  
 diff --git a/src/blsct/range_proof/bulletproofs/range_proof_logic.cpp b/src/blsct/range_proof/bulletproofs/range_proof_logic.cpp
-index 0a6142dada..ac3f3c5dca 100644
+index fbc95e7f83..43878d8b17 100644
 --- a/src/blsct/range_proof/bulletproofs/range_proof_logic.cpp
 +++ b/src/blsct/range_proof/bulletproofs/range_proof_logic.cpp
 @@ -257,7 +257,14 @@ bool RangeProofLogic<T>::VerifyProofs(
@@ -67,26 +67,24 @@ index 0a6142dada..ac3f3c5dca 100644
  
              const range_proof::Generators<T> gens = m_common.Gf().GetInstance(p.proof.seed);
 diff --git a/src/blsct/range_proof/bulletproofs_plus/range_proof_logic.cpp b/src/blsct/range_proof/bulletproofs_plus/range_proof_logic.cpp
-index 089cd96c28..5773daa596 100644
+index c17e15a9c9..427d757d3d 100644
 --- a/src/blsct/range_proof/bulletproofs_plus/range_proof_logic.cpp
 +++ b/src/blsct/range_proof/bulletproofs_plus/range_proof_logic.cpp
-@@ -573,7 +573,14 @@ bool RangeProofLogic<T>::VerifyProofs(
-     // its own std::async thread, so a batch of n proofs uses up to n cores
-     // with no nested threading (BlstUtil::MSM's own tiling stays off unless
-     // BlstUtil::SetDefaultThreads is raised).
--    if (proof_transcripts.size() <= 1) {
-+#ifdef WASM_SINGLE_THREADED
-+    // WASM build without pthreads: std::async(launch::async) cannot spawn a
-+    // thread, so verify every proof sequentially on the calling thread.
-+    constexpr bool single_threaded = true;
-+#else
-+    constexpr bool single_threaded = false;
-+#endif
-+    if (single_threaded || proof_transcripts.size() <= 1) {
-         for (size_t idx = 0; idx < proof_transcripts.size(); ++idx) {
-             if (!verify_one(idx)) return false;
+@@ -585,7 +585,13 @@ bool RangeProofLogic<T>::VerifyProofs(
          }
-@@ -731,7 +738,11 @@ AmountRecoveryResult<T> RangeProofLogic<T>::RecoverAmounts(
+     };
+ 
++#ifdef WASM_SINGLE_THREADED
++    // WASM build without pthreads: no worker can be spawned, so verify every
++    // proof sequentially on the calling thread.
++    size_t nthreads = 1;
++#else
+     size_t nthreads = threads != 0 ? threads : std::thread::hardware_concurrency();
++#endif
+     if (nthreads == 0) nthreads = 1;
+     nthreads = std::min(nthreads, n);
+     if (nthreads <= 1) {
+@@ -762,7 +768,11 @@ AmountRecoveryResult<T> RangeProofLogic<T>::RecoverAmounts(
          }
      };
  
