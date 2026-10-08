@@ -7,12 +7,18 @@ on:
       - '**'
     paths:
       - 'ffi/blsct.i'
+      - 'ffi/navio-core.sha'
+      - 'ffi/ts/navio-core.sha'
+      - 'ffi/ts/patches/**'
       - 'ffi/ts/src/**'
       - 'ffi/ts/scripts/**'
       - '.github/workflows/ts-browser-unit-tests.yml'
   pull_request:
     paths:
       - 'ffi/blsct.i'
+      - 'ffi/navio-core.sha'
+      - 'ffi/ts/navio-core.sha'
+      - 'ffi/ts/patches/**'
       - 'ffi/ts/src/**'
       - 'ffi/ts/scripts/**'
       - '.github/workflows/ts-browser-unit-tests.yml'
