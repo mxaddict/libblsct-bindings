@@ -1335,6 +1335,92 @@ public sealed class BlsctSwigIntegrationTests : IClassFixture<BlsctTestFixture>
     }
 
     // =========================================================================
+    // Stake delegation (cold staking)
+    // =========================================================================
+
+    private const ulong Stake = 1_000_000_000_000;
+
+    private static SWIGTYPE_p_BlsctSubAddr RandomSubAddr()
+    {
+        var viewKey = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+        var spendKey = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+        var spendPk = blsct.scalar_to_pub_key(spendKey);
+        return blsct.derive_sub_address(viewKey, spendPk, blsct.gen_sub_addr_id(0, 0));
+    }
+
+    private static SWIGTYPE_p_BlsctPoint RandomPoint() =>
+        blsct.cast_to_point(AssertSuccess(blsct.gen_random_point()));
+
+    [Fact]
+    public void StakeDelegation_PayloadOpensToItsOwner()
+    {
+        var delegateKey = RandomPoint();
+        var nonce = RandomPoint();
+        var gamma = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+
+        var rvData = blsct.build_stake_delegation_data(Stake, gamma, "reward-address", delegateKey, nonce);
+        var data = blsct.cast_to_uint8_t_ptr(AssertSuccess(rvData));
+        var dataLen = rvData.value_size;
+        Assert.True(blsct.is_stake_delegation_data(data, dataLen));
+
+        var rvInfo = blsct.recover_stake_delegation_owner_info(data, dataLen, nonce);
+        var info = AssertSuccess(rvInfo);
+        Assert.Equal(
+            blsct.serialize_point(delegateKey),
+            blsct.serialize_point(blsct.get_stake_delegation_owner_info_delegate_key(info)));
+        Assert.Equal("reward-address", blsct.get_stake_delegation_owner_info_reward_address(info));
+        blsct.delete_stake_delegation_owner_info(info);
+
+        var rvWrong = blsct.recover_stake_delegation_owner_info(data, dataLen, RandomPoint());
+        Assert.NotEqual(0, (int)rvWrong.result);
+
+        BlsctFree.FreeObj(rvData.value);
+    }
+
+    [Fact]
+    public void StakeDelegation_OtherDataIsNotAPayload()
+    {
+        var buf = blsct.hex_to_malloced_buf("00ff");
+        Assert.False(blsct.is_stake_delegation_data(buf, 2));
+        Assert.NotEqual(0, (int)blsct.recover_stake_delegation_owner_info(buf, 2, RandomPoint()).result);
+        BlsctFree.FreeObj(buf);
+
+        var gamma = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+        var rvEmptyReward = blsct.build_stake_delegation_data(Stake, gamma, "", RandomPoint(), RandomPoint());
+        Assert.NotEqual(0, (int)rvEmptyReward.result);
+    }
+
+    [Fact]
+    public void StakeDelegation_SetOnUnsignedOutput()
+    {
+        var dest = RandomSubAddr();
+        var tokenId = blsct.cast_to_token_id(AssertSuccess(blsct.gen_default_token_id()));
+
+        SWIGTYPE_p_void UnsignedOutput(TxOutputType outputType)
+        {
+            var blindKey = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+            var txOut = blsct.cast_to_tx_out(AssertSuccess(
+                blsct.build_tx_out(dest, Stake, "", tokenId, outputType, Stake, false, blindKey)));
+            return AssertSuccess(blsct.build_unsigned_output(txOut));
+        }
+
+        var staked = UnsignedOutput(TxOutputType.StakedCommitment);
+        var normal = UnsignedOutput(TxOutputType.Normal);
+        var delegateKey = RandomPoint();
+
+        var before = blsct.serialize_unsigned_output(staked);
+        Assert.True(blsct.set_unsigned_output_stake_delegation(staked, dest, delegateKey, "reward-address"));
+        Assert.NotEqual(before, blsct.serialize_unsigned_output(staked));
+
+        Assert.False(blsct.set_unsigned_output_stake_delegation(normal, dest, delegateKey, "reward-address"));
+        Assert.False(blsct.set_unsigned_output_stake_delegation(staked, RandomSubAddr(), delegateKey, "reward-address"));
+        Assert.False(blsct.set_unsigned_output_stake_delegation(staked, dest, delegateKey, ""));
+
+        blsct.delete_unsigned_output(staked);
+        blsct.delete_unsigned_output(normal);
+    }
+
+    // =========================================================================
     // Unsigned Transaction build/sign
     // =========================================================================
 
