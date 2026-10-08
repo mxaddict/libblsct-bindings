@@ -32,13 +32,18 @@ add_custom_command(
   VERBATIM)
 
 # The archives the TS and Python bindings link too. Visual Studio generators
-# put them in a per-configuration subdirectory.
+# put them in a per-configuration subdirectory. Looked up on every configure
+# (NO_CACHE): a cached path would keep linking the archives of an earlier
+# NAVIO_ARCHIVE_DIR, i.e. another navio-core commit than the one checked.
+# The unset drops the cache entry an older configure of this tree left.
 foreach(lib IN ITEMS blsct blst univalue)
+  unset(NAVIO_${lib}_ARCHIVE CACHE)
   find_library(NAVIO_${lib}_ARCHIVE
     NAMES ${lib}
     PATHS "${NAVIO_ARCHIVE_DIR}" "${NAVIO_ARCHIVE_DIR}/lib" "${NAVIO_ARCHIVE_DIR}/src/univalue"
     PATH_SUFFIXES Release
     NO_DEFAULT_PATH
+    NO_CACHE
     REQUIRED)
 endforeach()
 
