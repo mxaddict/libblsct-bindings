@@ -37,7 +37,8 @@ class ManagedObj(ABC):
     self._borrowed = True
 
   def __del__(self):
-    if self.obj is None or self._borrowed is False:
+    # A constructor that raised before ManagedObj.__init__ ran leaves no obj.
+    if getattr(self, "obj", None) is None or self._borrowed is False:
       return
     if self._del_method:
       self._del_method()
