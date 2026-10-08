@@ -1420,6 +1420,73 @@ public sealed class BlsctSwigIntegrationTests : IClassFixture<BlsctTestFixture>
         blsct.delete_unsigned_output(normal);
     }
 
+    [Fact]
+    public void StakeDelegation_OwnerRecoversFromSignedTransaction()
+    {
+        var viewKey = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+        var spendPk = blsct.scalar_to_pub_key(blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar())));
+        var dest = blsct.derive_sub_address(viewKey, spendPk, blsct.gen_sub_addr_id(0, 0));
+        var tokenId = blsct.cast_to_token_id(AssertSuccess(blsct.gen_default_token_id()));
+        var delegateKey = RandomPoint();
+        const ulong fee = 1000;
+
+        var blindKey = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+        var txOut = blsct.cast_to_tx_out(AssertSuccess(
+            blsct.build_tx_out(dest, Stake, "", tokenId, TxOutputType.StakedCommitment, Stake, false, blindKey)));
+        var unsignedOut = AssertSuccess(blsct.build_unsigned_output(txOut));
+        Assert.True(blsct.set_unsigned_output_stake_delegation(unsignedOut, dest, delegateKey, "reward-address"));
+
+        var gamma = blsct.cast_to_scalar(AssertSuccess(blsct.gen_scalar(100)));
+        var spendKey = blsct.cast_to_scalar(AssertSuccess(blsct.gen_scalar(101)));
+        var outPoint = blsct.cast_to_out_point(AssertSuccess(blsct.gen_out_point(new string('5', 64))));
+        var txIn = blsct.cast_to_tx_in(AssertSuccess(
+            blsct.build_tx_in(Stake + fee, gamma, spendKey, tokenId, outPoint, false, false)));
+        var unsignedTx = blsct.create_unsigned_transaction();
+        blsct.add_unsigned_transaction_input(unsignedTx, AssertSuccess(blsct.build_unsigned_input(txIn)));
+        blsct.add_unsigned_transaction_output(unsignedTx, unsignedOut);
+        blsct.set_unsigned_transaction_fee(unsignedTx, fee);
+        var signedHex = blsct.cast_to_const_char_ptr(AssertSuccess(blsct.sign_unsigned_transaction(unsignedTx)));
+        blsct.delete_unsigned_transaction(unsignedTx);
+
+        // Scan the outputs as a syncing wallet would.
+        var outs = blsct.get_ctx_outs(AssertSuccess(blsct.deserialize_ctx(signedHex)));
+        var recovered = 0;
+        for (uint i = 0; i < blsct.get_ctx_outs_size(outs); i++)
+        {
+            var output = blsct.get_ctx_out_at(outs, i);
+            var rvPredicate = blsct.get_ctx_out_vector_predicate(output);
+            if (rvPredicate.result != 0 || rvPredicate.value_size == 0) continue;
+            var predicate = blsct.cast_to_vector_predicate(rvPredicate.value);
+            if (blsct.get_vector_predicate_type(predicate, rvPredicate.value_size) != BlsctPredicateType.BlsctDataPredicateType)
+                continue;
+
+            var rvData = blsct.get_data_predicate_data(predicate, rvPredicate.value_size);
+            var data = blsct.cast_to_uint8_t_ptr(AssertSuccess(rvData));
+            Assert.True(blsct.is_stake_delegation_data(data, rvData.value_size));
+
+            // The owner's nonce: the output's blinding key times the view key.
+            var nonce = blsct.calc_nonce(blsct.point_to_public_key(blsct.get_ctx_out_blinding_key(output)), viewKey);
+            var info = AssertSuccess(blsct.recover_stake_delegation_owner_info(data, rvData.value_size, nonce));
+            Assert.Equal(
+                blsct.serialize_point(delegateKey),
+                blsct.serialize_point(blsct.get_stake_delegation_owner_info_delegate_key(info)));
+            Assert.Equal("reward-address", blsct.get_stake_delegation_owner_info_reward_address(info));
+            blsct.delete_stake_delegation_owner_info(info);
+            recovered++;
+        }
+        Assert.Equal(1, recovered);
+    }
+
+    [Fact]
+    public void DataPredicateData_RefusesOtherPredicates()
+    {
+        var spendPk = blsct.scalar_to_pub_key(blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar())));
+        var rvPredicate = blsct.build_mint_token_predicate(spendPk, 5);
+        var predicate = blsct.cast_to_vector_predicate(AssertSuccess(rvPredicate));
+        Assert.NotEqual(0, (int)blsct.get_data_predicate_data(predicate, rvPredicate.value_size).result);
+        BlsctFree.FreeObj(rvPredicate.value);
+    }
+
     // =========================================================================
     // Unsigned Transaction build/sign
     // =========================================================================
