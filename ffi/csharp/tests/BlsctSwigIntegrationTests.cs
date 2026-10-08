@@ -1460,6 +1460,12 @@ public sealed class BlsctSwigIntegrationTests : IClassFixture<BlsctTestFixture>
             if (blsct.get_vector_predicate_type(predicate, rvPredicate.value_size) != BlsctPredicateType.BlsctDataPredicateType)
                 continue;
 
+            // A staked commitment's whole script: OP_STAKED_COMMITMENT,
+            // OP_PUSHDATA2 with the commitment's range proof, OP_TRUE.
+            var script = blsct.get_ctx_out_script_pub_key_hex(output);
+            Assert.StartsWith("b94d", script);
+            Assert.EndsWith("51", script);
+
             var rvData = blsct.get_data_predicate_data(predicate, rvPredicate.value_size);
             var data = blsct.cast_to_uint8_t_ptr(AssertSuccess(rvData));
             Assert.True(blsct.is_stake_delegation_data(data, rvData.value_size));
