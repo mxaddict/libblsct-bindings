@@ -200,6 +200,7 @@ extern "C" {
   pub fn are_ctx_out_equal(vp_a: *const c_void, vp_b: *const c_void) -> bool;
   pub fn get_ctx_out_value(vp_ctx_out: *const c_void) -> u64;
   pub fn get_ctx_out_script_pub_key(vp_ctx_out: *const c_void) -> *const BlsctScript;
+  pub fn get_ctx_out_script_pub_key_hex(vp_ctx_out: *const c_void) -> *const c_char;
   pub fn get_ctx_out_token_id(vp_ctx_out: *const c_void) -> *const BlsctTokenId;
   pub fn get_ctx_out_vector_predicate(vp_ctx_out: *const c_void) -> *mut BlsctRetVal;
 
