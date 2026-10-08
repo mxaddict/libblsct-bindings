@@ -6,7 +6,8 @@ cmake_minimum_required(VERSION 3.22)
 project(navio_blsct_csharp_native LANGUAGES C CXX)
 
 set(NAVIO_CORE_DIR "" CACHE PATH "navio-core checkout whose libblsct is linked")
-set(NAVIO_CORE_BUILD_DIR "${NAVIO_CORE_DIR}/build" CACHE PATH "Its CMake build tree")
+set(NAVIO_ARCHIVE_DIR "${NAVIO_CORE_DIR}/build" CACHE PATH
+  "Where the libblsct archives are: navio-core's build tree, or a directory of prebuilt archives")
 if(NOT EXISTS "${NAVIO_CORE_DIR}/src/blsct/external_api/blsct.h")
   message(FATAL_ERROR "NAVIO_CORE_DIR must point at a navio-core checkout, got '${NAVIO_CORE_DIR}'")
 endif()
@@ -35,7 +36,7 @@ add_custom_command(
 foreach(lib IN ITEMS blsct blst univalue)
   find_library(NAVIO_${lib}_ARCHIVE
     NAMES ${lib}
-    PATHS "${NAVIO_CORE_BUILD_DIR}/lib" "${NAVIO_CORE_BUILD_DIR}/src/univalue"
+    PATHS "${NAVIO_ARCHIVE_DIR}" "${NAVIO_ARCHIVE_DIR}/lib" "${NAVIO_ARCHIVE_DIR}/src/univalue"
     PATH_SUFFIXES Release
     NO_DEFAULT_PATH
     REQUIRED)

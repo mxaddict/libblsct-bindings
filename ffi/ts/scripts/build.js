@@ -452,12 +452,36 @@ const buildLibBlsct = (cfg, numCpus) => {
     fs.copyFileSync(src, dest)
   }
 
+  writeCacheMeta(cfg)
+}
+
+const writeCacheMeta = (cfg) => {
   const meta = {
     navioCoreSha: cfg.navioCoreMasterSha,
     cacheVersion: cfg.libsCacheVersion,
     updatedAt: new Date().toISOString(),
   }
   fs.writeFileSync(cfg.libsCacheMetaPath, JSON.stringify(meta, null, 2))
+}
+
+// Install the archives of a libblsct built elsewhere for the same pin (CI
+// builds it once per platform, see .github/actions/libblsct) instead of
+// compiling navio-core here. A build from any other commit is refused.
+const usePrebuiltLibs = (cfg, dir) => {
+  const markerPath = path.join(dir, 'navio-core.sha')
+  const builtSha = fs.existsSync(markerPath) ? fs.readFileSync(markerPath, 'utf8').trim() : ''
+  if (builtSha !== cfg.navioCoreMasterSha) {
+    throw new Error(`BLSCT_PREBUILT_DIR holds libblsct built from '${builtSha}', but the pin is ${cfg.navioCoreMasterSha}`)
+  }
+  const archiveName = (target) => isWindows() ? `${target}.lib` : `lib${target}.a`
+  // Same order as cfg.destDotAFiles: blsct, univalue (as univalue_blsct), blst.
+  const sources = ['blsct', 'univalue', 'blst'].map((target) => path.join(dir, archiveName(target)))
+  fs.mkdirSync(cfg.libsDir, { recursive: true })
+  sources.forEach((src, i) => {
+    console.log(`Copying prebuilt ${src} to ${cfg.destDotAFiles[i]}...`)
+    fs.copyFileSync(src, cfg.destDotAFiles[i])
+  })
+  writeCacheMeta(cfg)
 }
 
 const getSwigVersion = () => {
@@ -621,6 +645,13 @@ const main = () => {
   }
 
   gitCloneNavioCore(cfg)
+
+  if (process.env.BLSCT_PREBUILT_DIR) {
+    usePrebuiltLibs(cfg, process.env.BLSCT_PREBUILT_DIR)
+    buildSwigWrapper(cfg)
+    console.log('\n=== Build complete! ===')
+    return
+  }
 
   // If cached .a files exist and contain the required symbols, reuse them.
   // Otherwise rebuild libblsct from the checked-out navio-core commit.

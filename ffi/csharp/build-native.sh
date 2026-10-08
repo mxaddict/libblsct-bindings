@@ -42,16 +42,30 @@ else
     git -C "$CORE_DIR" checkout --quiet "$SHA"
 fi
 
-cmake -S "$CORE_DIR" -B "$CORE_DIR/build" \
-    -DBUILD_LIBBLSCT_ONLY=ON \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_TESTS=OFF \
-    -DBUILD_BENCH=OFF \
-    -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-cmake --build "$CORE_DIR/build" --config Release --target blsct blst univalue -j "$JOBS"
+if [[ -n "${BLSCT_PREBUILT_DIR:-}" ]]; then
+    # Archives of a libblsct built elsewhere for the same pin (CI builds it
+    # once per platform, see .github/actions/libblsct); the checkout above is
+    # still needed for the headers. A build from any other commit is refused.
+    built="$(tr -d '[:space:]' < "$BLSCT_PREBUILT_DIR/navio-core.sha" 2>/dev/null || true)"
+    if [[ "$built" != "$SHA" ]]; then
+        echo "BLSCT_PREBUILT_DIR holds libblsct built from '$built', but the pin is $SHA" >&2
+        exit 1
+    fi
+    ARCHIVE_DIR="$BLSCT_PREBUILT_DIR"
+else
+    cmake -S "$CORE_DIR" -B "$CORE_DIR/build" \
+        -DBUILD_LIBBLSCT_ONLY=ON \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_TESTS=OFF \
+        -DBUILD_BENCH=OFF \
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+    cmake --build "$CORE_DIR/build" --config Release --target blsct blst univalue -j "$JOBS"
+    ARCHIVE_DIR="$CORE_DIR/build"
+fi
 
 cmake -S "$CSHARP_DIR/native" -B "$NATIVE_BUILD_DIR" \
     -DNAVIO_CORE_DIR="$CORE_DIR" \
+    -DNAVIO_ARCHIVE_DIR="$ARCHIVE_DIR" \
     -DCMAKE_BUILD_TYPE=Release
 cmake --build "$NATIVE_BUILD_DIR" --config Release -j "$JOBS"
 

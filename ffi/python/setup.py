@@ -68,6 +68,9 @@ libs_dir = navio_tmp_dir / "libs"
 # instead of linking stale archives against new headers.
 libs_cache_sha_path = libs_dir / "navio-core.sha"
 
+def write_libs_cache_sha():
+  libs_cache_sha_path.write_text(navio_core_master_sha + "\n", encoding="utf-8")
+
 # Static archives produced by the CMake BUILD_LIBBLSCT_ONLY build, all in the
 # out-of-source build tree: libblsct, the vendored supranational/blst it does
 # its curve arithmetic with, and univalue.
@@ -186,7 +189,24 @@ class CustomBuildExt(build_ext):
         shutil.copy2(src, dest)
         log(f"Copyied {src} to {dest}")
     if IS_PROD:
-      libs_cache_sha_path.write_text(navio_core_master_sha + "\n", encoding="utf-8")
+      write_libs_cache_sha()
+
+  @staticmethod
+  def use_prebuilt_libs(prebuilt_dir: Path):
+    # Archives of a libblsct built elsewhere for the same pin (CI builds it
+    # once per platform, see .github/actions/libblsct). A build from any other
+    # commit is refused rather than linked.
+    marker = prebuilt_dir / "navio-core.sha"
+    built_sha = marker.read_text(encoding="utf-8").strip() if marker.is_file() else ""
+    if built_sha != navio_core_master_sha:
+      raise RuntimeError(f"BLSCT_PREBUILT_DIR holds libblsct built from '{built_sha}', but the pin is {navio_core_master_sha}")
+    os.makedirs(libs_dir, exist_ok=True)
+    # Same order as dest_dot_a_files: blsct, univalue, blst.
+    for target, dest in zip(["blsct", "univalue", "blst"], dest_dot_a_files):
+      src = prebuilt_dir / (f"{target}.lib" if IS_MSVC else f"lib{target}.a")
+      shutil.copy2(src, dest)
+      log(f"Copied prebuilt {src} to {dest}")
+    write_libs_cache_sha()
 
   @staticmethod
   def cached_libs_match_pin():
@@ -201,12 +221,14 @@ class CustomBuildExt(build_ext):
     # for the sake of simplicity
     self.clone_navio_core()
 
-    # reuse the cached archives when they were built from the pinned commit
+    prebuilt_dir = os.environ.get("BLSCT_PREBUILT_DIR")
+    if prebuilt_dir:
+      self.use_prebuilt_libs(Path(prebuilt_dir))
+
+    # The extension links the archives in libs_dir directly, so reusing them
+    # needs no copy into the navio-core tree.
     if self.cached_libs_match_pin():
       log(f"Reusing archives built from navio-core {navio_core_master_sha}...")
-      for (src, dest) in zip(src_dot_a_files, dest_dot_a_files):
-        shutil.copy2(dest, src)
-        log(f"Copyied {dest} to {src}")
     else:
       # build .a files
       log("Building .a files...")
