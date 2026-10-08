@@ -229,7 +229,7 @@ mod tests {
     let amounts = RangeProof::recover_amounts(vec![req]).unwrap();
 
     assert_eq!(amounts.len(), 1);
-    assert_eq!(amounts[0].is_succ, true);
+    assert!(amounts[0].is_succ);
     assert_eq!(amounts[0].amount, out_amount);
     assert_eq!(amounts[0].msg, msg);
   }

@@ -49,6 +49,10 @@ impl CTxOuts {
     unsafe { get_ctx_outs_size(self.value()) }
   }
 
+  pub fn is_empty(&self) -> bool {
+    self.len() == 0
+  }
+
   impl_value_raw_const_obj!();
 }
 

@@ -193,7 +193,7 @@ mod tests {
     init();
     let tx_in = gen_tx_in(123);
     let is_staked_commitment = tx_in.is_staked_commitment();
-    assert_eq!(is_staked_commitment, false);
+    assert!(!is_staked_commitment);
   }
 
   #[test]
@@ -201,7 +201,7 @@ mod tests {
     init();
     let tx_in = gen_tx_in(123);
     let is_rbf = tx_in.is_rbf();
-    assert_eq!(is_rbf, false);
+    assert!(!is_rbf);
   }
 
   #[test]

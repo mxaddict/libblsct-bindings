@@ -157,7 +157,7 @@ impl RangeProof {
     }
 
     let mut results: Vec<AmountRecoveryRes> = vec![];
-    let result_size = unsafe { get_amount_recovery_result_size(value) } as usize;
+    let result_size = unsafe { get_amount_recovery_result_size(value) };
 
     for i in 0..result_size {
       let is_succ = unsafe { get_amount_recovery_result_is_succ(value, i) };
@@ -366,7 +366,7 @@ mod tests {
     let res = RangeProof::recover_amounts(vec![req]).unwrap();
 
     assert_eq!(res.len(), 1);
-    assert_eq!(res[0].is_succ, true);
+    assert!(res[0].is_succ);
     assert_eq!(res[0].amount, amount);
     assert_eq!(res[0].msg, msg);
   }
@@ -388,7 +388,7 @@ mod tests {
     let res = RangeProof::recover_amounts(vec![req]).unwrap();
 
     assert_eq!(res.len(), 1);
-    assert_eq!(res[0].is_succ, true);
+    assert!(res[0].is_succ);
     assert_eq!(res[0].amount, amount);
     assert_eq!(res[0].msg, msg);
   }

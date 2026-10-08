@@ -36,7 +36,7 @@ pub fn gen_ctx_actual(
   .unwrap();
 
   let tx_out = TxOut::new(
-    &destination,
+    destination,
     out_amount,
     msg,
     &TokenId::default().unwrap(),

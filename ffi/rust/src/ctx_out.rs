@@ -91,8 +91,7 @@ mod tests {
   fn get_ctx_out() -> CTxOut {
     let ctx = gen_ctx();
     let ctx_outs = ctx.get_ctx_outs();
-    let ctx_out = ctx_outs.at(0).unwrap();
-    ctx_out
+    ctx_outs.at(0).unwrap()
   }
 
   #[test]

@@ -50,6 +50,8 @@ impl_display!(TxOut);
 impl_from_retval!(TxOut);
 
 impl TxOut {
+  // Mirrors libblsct's build_tx_out parameter for parameter.
+  #[allow(clippy::too_many_arguments)]
   pub fn new<'a>(
     destination: &SubAddr,
     amount: u64,
@@ -175,7 +177,7 @@ mod tests {
     let destination = {
       let view_key = ChildKey::random().unwrap().to_tx_key().to_view_key();
       let spending_pub_key = PublicKey::random().unwrap();
-      SubAddr::new(&view_key, &spending_pub_key, &sub_addr_id)
+      SubAddr::new(&view_key, &spending_pub_key, sub_addr_id)
     };
     let token_id = TokenId::default().unwrap();
 
@@ -283,7 +285,7 @@ mod tests {
     let sub_addr_id = SubAddrId::new(123, 456);
     let tx_out = gen_tx_out(&sub_addr_id);
     let b = tx_out.subtract_fee_from_amount();
-    assert_eq!(b, false);
+    assert!(!b);
   }
 
   #[test]
