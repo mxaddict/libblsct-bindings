@@ -17,6 +17,9 @@ from blsct import (
   Scalar,
   set_chain,
   Signature,
+  build_stake_delegation_data_hex,
+  is_stake_delegation_data_hex,
+  parse_stake_delegation_owner_info,
   SubAddr,
   SubAddrId,
   TokenId,
@@ -27,6 +30,7 @@ from blsct import (
   ViewTag,
 )
 
+import blsct.blsct as blsct_swig
 import pytest
 import secrets
 
@@ -417,3 +421,50 @@ def test_tx_out_memo_multi_byte_round_trips():
 def test_tx_out_memo_with_nul_is_rejected():
   with pytest.raises(ValueError):
     TxOut(_memo_dest(), 12345, 'nav\x00io')
+
+STAKE = 1_000_000_000_000
+
+def test_stake_delegation_payload_opens_to_its_owner():
+  delegate_key = Point.random()
+  nonce = Point.random()
+  data_hex = build_stake_delegation_data_hex(STAKE, Scalar.random(), 'reward-address', delegate_key, nonce)
+
+  assert is_stake_delegation_data_hex(data_hex)
+  info = parse_stake_delegation_owner_info(data_hex, nonce)
+  assert info.delegate_key.serialize() == delegate_key.serialize()
+  assert info.reward_address == 'reward-address'
+
+  with pytest.raises(ValueError):
+    parse_stake_delegation_owner_info(data_hex, Point.random())
+
+def test_stake_delegation_rejects_other_data():
+  assert not is_stake_delegation_data_hex('00ff')
+  assert not is_stake_delegation_data_hex('')
+  with pytest.raises(ValueError):
+    is_stake_delegation_data_hex('abc')
+  with pytest.raises(ValueError):
+    parse_stake_delegation_owner_info('00ff', Point.random())
+  with pytest.raises(ValueError):
+    build_stake_delegation_data_hex(STAKE, Scalar.random(), '', Point.random(), Point.random())
+
+def test_set_unsigned_output_stake_delegation():
+  dest = _memo_dest()
+
+  def unsigned_output(output_type):
+    tx_out = TxOut(dest, STAKE, '', TokenId(), output_type, STAKE, False, Scalar.random())
+    rv = blsct_swig.build_unsigned_output(tx_out.value())
+    assert rv.result == 0
+    out = rv.value
+    blsct_swig.free_obj(rv)
+    return out
+
+  staked = unsigned_output("StakedCommitment")
+  normal = unsigned_output("Normal")
+  try:
+    delegate_key = Point.random().value()
+    assert blsct_swig.set_unsigned_output_stake_delegation(staked, dest.value(), delegate_key, 'reward-address')
+    assert not blsct_swig.set_unsigned_output_stake_delegation(normal, dest.value(), delegate_key, 'reward-address')
+    assert not blsct_swig.set_unsigned_output_stake_delegation(staked, _memo_dest().value(), delegate_key, 'reward-address')
+  finally:
+    blsct_swig.delete_unsigned_output(staked)
+    blsct_swig.delete_unsigned_output(normal)

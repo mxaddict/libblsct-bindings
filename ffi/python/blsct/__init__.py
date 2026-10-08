@@ -34,6 +34,12 @@ from .range_proof import RangeProof
 from .scalar import Scalar
 from .script import Script
 from .signature import Signature
+from .stake_delegation import (
+  build_stake_delegation_data_hex,
+  is_stake_delegation_data_hex,
+  parse_stake_delegation_owner_info,
+  StakeDelegationOwnerInfo,
+)
 from .sub_addr import SubAddr
 from .sub_addr_id import SubAddrId
 from .token_id import TokenId
