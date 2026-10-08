@@ -45,6 +45,7 @@ from .sub_addr_id import SubAddrId
 from .token_id import TokenId
 from .tx_in import TxIn
 from .tx_out import TxOut, TxOutputType
+from .vector_predicate import parse_data_predicate_data
 from .view_tag import ViewTag
 
 # inject the swig module constants, functions and etc into the current namespace 

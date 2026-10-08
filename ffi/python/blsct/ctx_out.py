@@ -37,7 +37,7 @@ class CTxOut(ManagedObj, Serializable):
     if rv.result != 0:
       blsct.free_obj(rv)
       raise ValueError(f"Failed to get vector predicate. Error code = {rv.result}")
-    if rv.value_size != 0:
+    if rv.value_size == 0:
       blsct.free_obj(rv)
       return ""
     buf = blsct.cast_to_uint8_t_ptr(rv.value)

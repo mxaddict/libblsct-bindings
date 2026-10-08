@@ -19,6 +19,7 @@ from blsct import (
   Signature,
   build_stake_delegation_data_hex,
   is_stake_delegation_data_hex,
+  parse_data_predicate_data,
   parse_stake_delegation_owner_info,
   SubAddr,
   SubAddrId,
@@ -468,3 +469,73 @@ def test_set_unsigned_output_stake_delegation():
   finally:
     blsct_swig.delete_unsigned_output(staked)
     blsct_swig.delete_unsigned_output(normal)
+
+def test_cold_staking_end_to_end():
+  # Delegate a staked output, sign the transaction, then recover the
+  # delegation as the owner's syncing wallet would.
+  # A sub-address, as wallets receive on: its view key is v * D for the spend
+  # key D, so the owner's nonce works out to v times the output's blinding key.
+  view_key = Scalar.random()
+  dest = SubAddr(view_key, PublicKey(), SubAddrId(0, 0))
+  delegate_key = Point.random()
+  fee = 1000
+
+  tx_out = TxOut(dest, STAKE, '', TokenId(), "StakedCommitment", STAKE, False, Scalar.random())
+  rv = blsct_swig.build_unsigned_output(tx_out.value())
+  assert rv.result == 0
+  unsigned_out = rv.value
+  blsct_swig.free_obj(rv)
+  assert blsct_swig.set_unsigned_output_stake_delegation(
+    unsigned_out, dest.value(), delegate_key.value(), 'reward-address'
+  )
+  tx_in = TxIn(STAKE + fee, 100, Scalar(101), TokenId(), OutPoint(CTxId.deserialize('53' * 32)))
+  rv = blsct_swig.build_unsigned_input(tx_in.value())
+  assert rv.result == 0
+  unsigned_in = rv.value
+  blsct_swig.free_obj(rv)
+
+  unsigned_tx = blsct_swig.create_unsigned_transaction()
+  blsct_swig.add_unsigned_transaction_input(unsigned_tx, unsigned_in)
+  blsct_swig.add_unsigned_transaction_output(unsigned_tx, unsigned_out)
+  blsct_swig.set_unsigned_transaction_fee(unsigned_tx, fee)
+  rv = blsct_swig.sign_unsigned_transaction(unsigned_tx)
+  assert rv.result == 0
+  signed_hex = blsct_swig.cast_to_const_char_ptr(rv.value)
+  blsct_swig.free_obj(rv.value)
+  blsct_swig.free_obj(rv)
+  blsct_swig.delete_unsigned_transaction(unsigned_tx)
+
+  ctx_outs = CTx.deserialize(signed_hex).get_ctx_outs()
+  outs = [ctx_outs.at(i) for i in range(ctx_outs.size())]
+  def data_payload(out):
+    # The fee output carries a predicate too, but not a DATA one.
+    predicate_hex = out.get_vector_predicate()
+    if predicate_hex == '':
+      return None
+    try:
+      return parse_data_predicate_data(predicate_hex)
+    except ValueError:
+      return None
+
+  delegated = [(o, data_payload(o)) for o in outs if data_payload(o) is not None]
+  assert len(delegated) == 1
+  out, data_hex = delegated[0]
+  assert is_stake_delegation_data_hex(data_hex)
+
+  # The owner's nonce: the output's blinding key times the view key.
+  nonce = PublicKey.from_point(out.get_blinding_key()).generate_nonce(view_key).get_point()
+  info = parse_stake_delegation_owner_info(data_hex, nonce)
+  assert info.delegate_key.serialize() == delegate_key.serialize()
+  assert info.reward_address == 'reward-address'
+
+def test_parse_data_predicate_data_refuses_other_predicates():
+  # A non-DATA predicate: the mint-token predicate of the C API.
+  rv = blsct_swig.build_mint_token_predicate(PublicKey().value(), 5)
+  assert rv.result == 0
+  predicate_hex = blsct_swig.serialize_vector_predicate(
+    blsct_swig.cast_to_vector_predicate(rv.value), rv.value_size
+  )
+  blsct_swig.free_obj(rv.value)
+  blsct_swig.free_obj(rv)
+  with pytest.raises(ValueError):
+    parse_data_predicate_data(predicate_hex)
