@@ -65,9 +65,10 @@ def is_stake_delegation_data_hex(data_hex: str) -> bool:
 def parse_stake_delegation_owner_info(data_hex: str, nonce: Point) -> StakeDelegationOwnerInfo:
   """
   Recover the staker key and reward address from a stake-delegation payload,
-  as the owner of the delegated output. The nonce is the output's blinding key
-  times the owner's view key. Raises ValueError when the payload is not a
-  delegation payload or the nonce does not open it.
+  as the owner of the delegated output. The nonce is the output's BLSCT nonce;
+  for an output paid to a sub-address, as wallets receive, that is the
+  output's blinding key times the owner's view key. Raises ValueError when the
+  payload is not a delegation payload or the nonce does not open it.
   """
   def recover(buf: Any, size: int) -> StakeDelegationOwnerInfo:
     rv = blsct.recover_stake_delegation_owner_info(buf, size, nonce.value())

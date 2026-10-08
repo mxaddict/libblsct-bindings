@@ -81,7 +81,9 @@ export const isStakeDelegationDataHex = (dataHex: string): boolean => {
 /** Recovers the staker key and reward address from a stake-delegation
  * payload, as the owner of the delegated output.
  * @param dataHex - The payload of the output's DATA predicate.
- * @param nonce - The output's BLSCT nonce: the output's blinding key times the owner's view key.
+ * @param nonce - The output's BLSCT nonce, the destination view key times the
+ *   output's blinding scalar. For an output paid to a sub-address, as wallets
+ *   receive, that is the output's blinding key times the owner's view key.
  * @returns The delegation the payload carries.
  * @throws If the payload is not a delegation payload or the nonce does not open it.
  */

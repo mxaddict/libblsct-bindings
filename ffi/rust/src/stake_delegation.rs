@@ -106,8 +106,9 @@ pub fn is_stake_delegation_data(data: &[u8]) -> bool {
 
 /// Recovers the staker key and reward address from a stake-delegation
 /// payload, as the owner of the delegated output. `nonce` is the output's
-/// blinding key times the owner's view key. Fails when `data` is not a
-/// delegation payload or the nonce does not open it.
+/// BLSCT nonce; for an output paid to a sub-address, as wallets receive, that
+/// is the output's blinding key times the owner's view key. Fails when `data`
+/// is not a delegation payload or the nonce does not open it.
 pub fn recover_stake_delegation_owner_info(
   data: &[u8],
   nonce: &Point,
