@@ -272,6 +272,7 @@ const BLSCT_SOURCES = [
   'blsct/tokens/predicate_exec.cpp',
   'blsct/tokens/predicate_parser.cpp',
   'blsct/wallet/address.cpp',
+  'blsct/wallet/blinding_key.cpp',
   'blsct/wallet/delegation.cpp',
   'blsct/wallet/helpers.cpp',
   'blsct/wallet/keyman.cpp',
