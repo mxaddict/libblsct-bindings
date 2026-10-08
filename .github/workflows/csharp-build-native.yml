@@ -23,6 +23,11 @@ jobs:
         with:
           clean: true
 
+      # navio-core's libblsct, built once per runner image and pin and shared
+      # by every binding through the Actions cache (sets BLSCT_PREBUILT_DIR).
+      - name: Build or restore libblsct
+        uses: ./.github/actions/libblsct
+
       - name: Install system dependencies
         run: |
           if [[ $RUNNER_OS == 'Linux' ]]; then
