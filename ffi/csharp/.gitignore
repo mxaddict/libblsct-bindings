@@ -10,3 +10,8 @@ docs/api/*.yml
 docs/api/*.json
 docs/api/.manifest
 !docs/api/.gitkeep
+
+# native library build (build-native.sh)
+navio-core/
+native/build/
+native/out/
