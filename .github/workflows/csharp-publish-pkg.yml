@@ -5,42 +5,38 @@ on:
   push:
     paths:
       - 'ffi/blsct.i'
+      - 'ffi/navio-core.sha'
       - 'ffi/csharp/**'
       - '.github/workflows/csharp-publish-pkg.yml'
       - '.github/workflows/csharp-build-native.yml'
   pull_request:
     paths:
       - 'ffi/blsct.i'
+      - 'ffi/navio-core.sha'
       - 'ffi/csharp/**'
       - '.github/workflows/csharp-publish-pkg.yml'
       - '.github/workflows/csharp-build-native.yml'
 
-env:
-  NAVIO_CORE_SHA: '623ad2da8e9031d8b900c54af6d393ec88e9a32a'
-
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-24.04
             rid: linux-x64
             lib: libblsct.so
-            host: ''
           - os: macos-15
             rid: osx-arm64
             lib: libblsct.dylib
-            host: ''
-          - os: ubuntu-24.04
+          - os: windows-2022
             rid: win-x64
             lib: blsct.dll
-            host: x86_64-w64-mingw32
 
     uses: ./.github/workflows/csharp-build-native.yml
     with:
       runner: ${{ matrix.os }}
       artifact-name: native-${{ matrix.rid }}
-      host: ${{ matrix.host }}
 
   pack:
     needs: build
@@ -96,6 +92,7 @@ jobs:
   verify:
     needs: pack
     strategy:
+      fail-fast: false
       matrix:
         os: ['ubuntu-latest', 'macos-15', 'windows-2022']
     runs-on: ${{ matrix.os }}

@@ -9,13 +9,6 @@ on:
       artifact-name:
         required: true
         type: string
-      host:
-        required: false
-        type: string
-        default: ''
-
-env:
-  NAVIO_CORE_SHA: '623ad2da8e9031d8b900c54af6d393ec88e9a32a'
 
 jobs:
   build-native:
@@ -30,204 +23,27 @@ jobs:
         with:
           clean: true
 
-      - name: Install system dependencies (Linux cross-compile for Windows)
-        if: inputs.host == 'x86_64-w64-mingw32'
+      - name: Install system dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y swig autoconf automake libtool pkg-config build-essential libgmp-dev g++-mingw-w64-x86-64
-
-      - name: Build GMP for mingw (Windows cross-compile)
-        if: inputs.host == 'x86_64-w64-mingw32'
-        run: |
-          wget -q https://mirrors.kernel.org/gnu/gmp/gmp-6.3.0.tar.xz
-          tar xf gmp-6.3.0.tar.xz
-          cd gmp-6.3.0
-          ./configure --host=x86_64-w64-mingw32 --prefix="$GITHUB_WORKSPACE/gmp-mingw" \
-            --enable-static --disable-shared
-          make -j$(nproc)
-          make install
-
-      - name: Install system dependencies (Linux native)
-        if: runner.os == 'Linux' && inputs.host != 'x86_64-w64-mingw32'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y swig autoconf automake libtool pkg-config build-essential libgmp-dev
-
-      - name: Install system dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          brew install swig autoconf automake libtool pkg-config gmp
-
-      - name: Clone navio-core
-        run: |
-          git clone --depth 1 https://github.com/nav-io/navio-core navio-core-build
-          cd navio-core-build
-          git fetch --depth 1 origin ${{ env.NAVIO_CORE_SHA }}
-          git checkout ${{ env.NAVIO_CORE_SHA }}
-
-      - name: Cache navio-core depends
-        uses: actions/cache@v5
-        with:
-          path: navio-core-build/depends/built
-          key: navio-depends-${{ runner.os }}-${{ inputs.host }}-${{ env.NAVIO_CORE_SHA }}
-
-      - name: Build navio-core depends
-        run: |
-          MAKE_ARGS="-j$(nproc 2>/dev/null || sysctl -n hw.ncpu) -C navio-core-build/depends NO_QT=1 NO_WALLET=1 NO_ZMQ=1 NO_UPNP=1 NO_NATPMP=1"
-          if [ -n "${{ inputs.host }}" ]; then
-            make HOST=${{ inputs.host }} $MAKE_ARGS
+          if [[ $RUNNER_OS == 'Linux' ]]; then
+            sudo apt-get update && sudo apt-get install -y swig cmake build-essential
+          elif [[ $RUNNER_OS == 'macOS' ]]; then
+            brew install swig cmake
           else
-            make $MAKE_ARGS
+            # The Windows runner ships Visual Studio, CMake and git.
+            choco install swig --no-progress -y
           fi
+          swig -version
 
-      - name: Build libblsct static libraries
-        run: |
-          cd navio-core-build
-          ./autogen.sh
-          ARCH_DIR=$(ls -d depends/*-*-* | head -1)
-          echo "ARCH_DIR=$ARCH_DIR"
-          ls -la "$ARCH_DIR/lib"
-          if [ -f "$ARCH_DIR/lib/libgmp.a" ]; then echo "found $ARCH_DIR/lib/libgmp.a"; else echo "missing $ARCH_DIR/lib/libgmp.a"; fi
-          if [ -n "${{ inputs.host }}" ]; then
-            ./configure --prefix=$(pwd)/$ARCH_DIR --enable-build-libblsct-only --host=${{ inputs.host }}
-          else
-            ./configure --prefix=$(pwd)/$ARCH_DIR --enable-build-libblsct-only
-          fi
-          make -j$(nproc 2>/dev/null || sysctl -n hw.ncpu)
+      # Builds libblsct from the shared pin (ffi/navio-core.sha) and links the
+      # SWIG C# wrapper against it: blsct.dll with MSVC on Windows,
+      # libblsct.so / libblsct.dylib elsewhere.
+      - name: Build native library
+        run: ./ffi/csharp/build-native.sh
 
-      - name: Build libblsct shared library (Windows cross-compile)
-        if: inputs.host == 'x86_64-w64-mingw32'
-        run: |
-          cd navio-core-build
-          ARCH_DIR=$(ls -d depends/*-*-* | head -1)
-
-          GMP_STATIC="$GITHUB_WORKSPACE/gmp-mingw/lib/libgmp.a"
-          SHARED_EXT=dll
-          SHARED_FLAGS="-shared -Wl,--export-all-symbols -Wl,--out-implib,libblsct.dll.a"
-          OUTPUT_NAME=blsct.$SHARED_EXT
-          EXTRA_LIBS="-static-libgcc -static-libstdc++ -Wl,-Bstatic -lwinpthread -Wl,-Bdynamic -lm -lbcrypt -lws2_32 -liphlpapi -lshell32"
-          CXX=x86_64-w64-mingw32-g++
-
-          ln -sf "$GITHUB_WORKSPACE/navio-core-build" "$GITHUB_WORKSPACE/navio-core"
-
-          mkdir -p "$GITHUB_WORKSPACE/swig-out"
-          swig -c++ -csharp -namespace NavioBlsct -dllimport blsct \
-            -outdir "$GITHUB_WORKSPACE/swig-out" \
-            -o "$GITHUB_WORKSPACE/swig-out/blsct_wrap.cxx" \
-            "$GITHUB_WORKSPACE/ffi/csharp/blsct.i"
-
-          $CXX -std=c++20 -O2 \
-            -I src -I src/bls/include -I src/bls/mcl/include -DBLS_ETH=1 \
-            -c "$GITHUB_WORKSPACE/ffi/csharp/native_stubs.cpp" -o "$GITHUB_WORKSPACE/swig-out/native_stubs.o"
-
-          $CXX $SHARED_FLAGS -std=c++20 -O2 \
-            -I src -I src/bls/include -I src/bls/mcl/include -DBLS_ETH=1 \
-            "$GITHUB_WORKSPACE/swig-out/blsct_wrap.cxx" \
-            "$GITHUB_WORKSPACE/swig-out/native_stubs.o" \
-            -Wl,--whole-archive \
-            src/libblsct.a \
-            src/libunivalue_blsct.a \
-            src/bls/lib/libbls384_256.a \
-            src/bls/mcl/lib/libmcl.a \
-            "$ARCH_DIR/lib/libevent.a" \
-            -Wl,--no-whole-archive \
-            -L"$ARCH_DIR/lib" \
-            "$GMP_STATIC" \
-            $EXTRA_LIBS \
-            -o "$GITHUB_WORKSPACE/$OUTPUT_NAME"
-
-      - name: Build libblsct shared library (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          cd navio-core-build
-          ARCH_DIR=$(ls -d depends/*-*-* | head -1)
-
-          GMP_STATIC="$(brew --prefix gmp)/lib/libgmp.a"
-          SHARED_EXT=dylib
-          SHARED_FLAGS="-dynamiclib -install_name @rpath/libblsct.$SHARED_EXT"
-          PIC_FLAGS="-fPIC"
-          OUTPUT_NAME=libblsct.$SHARED_EXT
-          EXTRA_LIBS="-lstdc++ -lm -lpthread"
-
-          echo "GMP_STATIC=$GMP_STATIC"
-
-          ln -sf "$GITHUB_WORKSPACE/navio-core-build" "$GITHUB_WORKSPACE/navio-core"
-
-          mkdir -p "$GITHUB_WORKSPACE/swig-out"
-          swig -c++ -csharp -namespace NavioBlsct -dllimport blsct \
-            -outdir "$GITHUB_WORKSPACE/swig-out" \
-            -o "$GITHUB_WORKSPACE/swig-out/blsct_wrap.cxx" \
-            "$GITHUB_WORKSPACE/ffi/csharp/blsct.i"
-
-          c++ $PIC_FLAGS -std=c++20 -O2 \
-            -I src -I src/bls/include -I src/bls/mcl/include -DBLS_ETH=1 \
-            -c "$GITHUB_WORKSPACE/ffi/csharp/native_stubs.cpp" -o "$GITHUB_WORKSPACE/swig-out/native_stubs.o"
-
-          c++ $SHARED_FLAGS -fPIC -std=c++20 -O2 \
-            -I src -I src/bls/include -I src/bls/mcl/include -DBLS_ETH=1 \
-            "$GITHUB_WORKSPACE/swig-out/blsct_wrap.cxx" \
-            "$GITHUB_WORKSPACE/swig-out/native_stubs.o" \
-            -Wl,-force_load,src/libblsct.a \
-            -Wl,-force_load,src/libunivalue_blsct.a \
-            -Wl,-force_load,src/bls/lib/libbls384_256.a \
-            -Wl,-force_load,src/bls/mcl/lib/libmcl.a \
-            -Wl,-force_load,"$ARCH_DIR/lib/libevent.a" \
-            -L"$ARCH_DIR/lib" \
-            -lstdc++ -lm -lpthread "$GMP_STATIC" \
-            -o "$GITHUB_WORKSPACE/$OUTPUT_NAME"
-
-      - name: Build libblsct shared library (Linux native)
-        if: runner.os == 'Linux' && inputs.host != 'x86_64-w64-mingw32'
-        run: |
-          cd navio-core-build
-          ARCH_DIR=$(ls -d depends/*-*-* | head -1)
-
-          GMP_STATIC="$(gcc -print-file-name=libgmp.a)"
-          SHARED_EXT=so
-          SHARED_FLAGS="-shared"
-          PIC_FLAGS="-fPIC"
-          OUTPUT_NAME=libblsct.$SHARED_EXT
-          EXTRA_LIBS="-lstdc++ -lm -lpthread"
-
-          echo "GMP_STATIC=$GMP_STATIC"
-
-          ln -sf "$GITHUB_WORKSPACE/navio-core-build" "$GITHUB_WORKSPACE/navio-core"
-
-          mkdir -p "$GITHUB_WORKSPACE/swig-out"
-          swig -c++ -csharp -namespace NavioBlsct -dllimport blsct \
-            -outdir "$GITHUB_WORKSPACE/swig-out" \
-            -o "$GITHUB_WORKSPACE/swig-out/blsct_wrap.cxx" \
-            "$GITHUB_WORKSPACE/ffi/csharp/blsct.i"
-
-          c++ $PIC_FLAGS -std=c++20 -O2 \
-            -I src -I src/bls/include -I src/bls/mcl/include -DBLS_ETH=1 \
-            -c "$GITHUB_WORKSPACE/ffi/csharp/native_stubs.cpp" -o "$GITHUB_WORKSPACE/swig-out/native_stubs.o"
-
-          c++ $SHARED_FLAGS -fPIC -std=c++20 -O2 \
-            -I src -I src/bls/include -I src/bls/mcl/include -DBLS_ETH=1 \
-            "$GITHUB_WORKSPACE/swig-out/blsct_wrap.cxx" \
-            "$GITHUB_WORKSPACE/swig-out/native_stubs.o" \
-            -Wl,--whole-archive \
-            src/libblsct.a \
-            src/libunivalue_blsct.a \
-            src/bls/lib/libbls384_256.a \
-            src/bls/mcl/lib/libmcl.a \
-            "$ARCH_DIR/lib/libevent.a" \
-            -Wl,--no-whole-archive \
-            -L"$ARCH_DIR/lib" \
-            -lstdc++ -lm -lpthread "$GMP_STATIC" \
-            -o "$GITHUB_WORKSPACE/$OUTPUT_NAME"
-
-      - name: Upload native library (Windows)
-        if: inputs.host == 'x86_64-w64-mingw32'
+      - name: Upload native library
         uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact-name }}
-          path: ${{ github.workspace }}/blsct.dll
-
-      - name: Upload native library (Unix)
-        if: inputs.host != 'x86_64-w64-mingw32'
-        uses: actions/upload-artifact@v7
-        with:
-          name: ${{ inputs.artifact-name }}
-          path: ${{ github.workspace }}/libblsct.*
+          path: ffi/csharp/native/out/*
+          if-no-files-found: error
