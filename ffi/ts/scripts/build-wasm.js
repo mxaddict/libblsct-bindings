@@ -10,15 +10,16 @@
 const { execSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { readNavioCorePin } = require('./navio-core-pin');
 
 // Configuration
 const IS_PROD = true;
 // Enable WASM assertions for debugging (set WASM_DEBUG=1 to enable)
 const WASM_DEBUG = process.env.WASM_DEBUG === '1';
 
-// Production: clone by specific SHA from nav-io/navio-core
-// git ls-remote https://github.com/nav-io/navio-core.git refs/heads/master
-const MASTER_SHA = '75e81b5422405d20d7931c31b19527ff03fde73e'; // master 2026-09-09 (blst backend, nav-io/navio-core#431 + #432) — must match build.js
+// Production: clone by specific SHA from nav-io/navio-core, the same commit
+// build.js and every other binding use (ffi/navio-core.sha).
+const MASTER_SHA = readNavioCorePin();
 const NAVIO_CORE_REPO = IS_PROD
   ? 'https://github.com/nav-io/navio-core'
   : 'https://github.com/gogoex/navio-core';
@@ -73,6 +74,17 @@ function getNavioCoreCommit() {
 function ensureNavioCore() {
   const srcDir = path.join(NAVIO_CORE_DIR, 'src');
   const requiredSha = IS_PROD ? MASTER_SHA : null;
+
+  // Local-source bypass, as in build.js: build against an in-place navio-core
+  // checkout (e.g. an unmerged branch) as-is. Without it, a checkout at any
+  // other commit than the pin is deleted and re-cloned below.
+  if (process.env.BLSCT_LOCAL_NAVIO_CORE === '1') {
+    if (!fs.existsSync(srcDir)) {
+      throw new Error(`BLSCT_LOCAL_NAVIO_CORE=1 but ${NAVIO_CORE_DIR} has no src/ directory`);
+    }
+    console.log(`Using existing local navio-core dir (BLSCT_LOCAL_NAVIO_CORE=1): ${NAVIO_CORE_DIR}`);
+    return;
+  }
 
   // Check if navio-core exists and is at the correct commit
   if (fs.existsSync(srcDir)) {
@@ -260,6 +272,7 @@ const BLSCT_SOURCES = [
   'blsct/tokens/predicate_exec.cpp',
   'blsct/tokens/predicate_parser.cpp',
   'blsct/wallet/address.cpp',
+  'blsct/wallet/blinding_key.cpp',
   'blsct/wallet/delegation.cpp',
   'blsct/wallet/helpers.cpp',
   'blsct/wallet/keyman.cpp',
@@ -430,6 +443,7 @@ const EXPORTED_FUNCTIONS = [
   '_build_tx_in',
   '_build_tx_out',
   '_build_ctx',
+  '_build_ctx_with_change',
   '_get_ctx_id',
   '_get_ctx_ins',
   '_get_ctx_outs',
@@ -462,6 +476,7 @@ const EXPORTED_FUNCTIONS = [
   // CTxOut accessors
   '_get_ctx_out_value',
   '_get_ctx_out_script_pub_key',
+  '_get_ctx_out_script_pub_key_hex',
   '_get_ctx_out_token_id',
   '_get_ctx_out_vector_predicate',
   '_get_ctx_out_spending_key',
@@ -484,6 +499,7 @@ const EXPORTED_FUNCTIONS = [
   '_get_mint_nft_predicate_public_key',
   '_get_mint_nft_predicate_nft_id',
   '_get_mint_nft_predicate_metadata',
+  '_get_data_predicate_data',
 
   // TxIn accessors
   '_get_tx_in_amount',
@@ -528,6 +544,13 @@ const EXPORTED_FUNCTIONS = [
   '_serialize_unsigned_transaction',
   '_deserialize_unsigned_transaction',
   '_sign_unsigned_transaction',
+
+  // Stake delegation
+  '_set_unsigned_output_stake_delegation',
+  '_is_stake_delegation_data',
+  '_build_stake_delegation_data',
+  '_recover_stake_delegation_owner_info',
+  '_delete_stake_delegation_owner_info',
 
   // Signature operations
   '_sign_message',

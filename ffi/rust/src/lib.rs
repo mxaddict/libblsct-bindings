@@ -17,6 +17,7 @@ pub mod range_proof;
 pub mod scalar;
 pub mod script;
 pub mod signature;
+pub mod stake_delegation;
 pub mod sub_addr;
 pub mod sub_addr_id;
 pub mod token_id;

@@ -112,6 +112,17 @@
     auto vec = static_cast<std::vector<BlsctAmountRecoveryResult>*>(vp_amt_recovery_req_vec);
     return static_cast<void*>(&vec->at(idx).gamma);
   }
+
+  // Field readers for the BlsctStakeDelegationOwnerInfo that
+  // recover_stake_delegation_owner_info returns. Both point into the struct,
+  // so copy them before delete_stake_delegation_owner_info.
+  const BlsctPoint* get_stake_delegation_owner_info_delegate_key(const void* vp_owner_info) {
+    return &static_cast<const BlsctStakeDelegationOwnerInfo*>(vp_owner_info)->delegate_key;
+  }
+
+  const char* get_stake_delegation_owner_info_reward_address(const void* vp_owner_info) {
+    return static_cast<const BlsctStakeDelegationOwnerInfo*>(vp_owner_info)->reward_address;
+  }
 %}
 
 %include "stdint.i"
@@ -248,6 +259,11 @@ export BlsctCTxRetVal* build_ctx(
     const void* void_tx_ins,
     const void* void_tx_outs
 );
+export BlsctCTxRetVal* build_ctx_with_change(
+    const void* void_tx_ins,
+    const void* void_tx_outs,
+    const BlsctSubAddr* change_addr
+);
 // using void* instead of const void* to avoid const_cast
 export const char* get_ctx_id(void* vp_ctx);
 export const void* get_ctx_ins(void* vp_ctx);
@@ -287,6 +303,9 @@ export const void* get_ctx_out_at(const void* vp_ctx_outs, const size_t i);
 export bool are_ctx_out_equal(const void* vp_a, const void* vp_b);
 export uint64_t get_ctx_out_value(const void* vp_ctx_out);
 export const BlsctScript* get_ctx_out_script_pub_key(const void* vp_ctx_out);
+// The whole scriptPubKey in hex. BlsctScript above holds only SCRIPT_SIZE
+// bytes, which cuts off longer scripts such as a staked commitment's.
+export const char* get_ctx_out_script_pub_key_hex(const void* vp_ctx_out);
 export const BlsctTokenId* get_ctx_out_token_id(const void* vp_ctx_out);
 export BlsctRetVal* get_ctx_out_vector_predicate(const void* vp_ctx_out);
 
@@ -543,10 +562,14 @@ export bool get_tx_in_staked_commitment(const BlsctTxIn* tx_in);
 export bool get_tx_in_rbf(const BlsctTxIn* tx_in);
 
 // tx out
+// The memo crosses as one string argument; SWIG passes its UTF-8 byte length
+// alongside, so core can reject an embedded NUL instead of truncating there.
+%apply (const char *STRING, size_t LENGTH) { (const char* memo, size_t memo_len) };
 export BlsctRetVal* build_tx_out(
     const BlsctSubAddr* blsct_dest,
     const uint64_t amount,
-    const char* in_memo_c_str,
+    const char* memo,
+    size_t memo_len,
     const BlsctTokenId* blsct_token_id,
     const TxOutputType output_type,
     const uint64_t min_stake,
@@ -619,6 +642,12 @@ export uint64_t get_mint_nft_predicate_nft_id(
   size_t obj_size
 );
 export void* get_mint_nft_predicate_metadata(
+  const BlsctVectorPredicate* blsct_vector_predicate,
+  size_t obj_size
+);
+// The payload of a DATA predicate, without its operation byte and length
+// prefix; fails when the predicate is not DATA.
+export BlsctRetVal* get_data_predicate_data(
   const BlsctVectorPredicate* blsct_vector_predicate,
   size_t obj_size
 );
@@ -723,6 +752,29 @@ export BlsctPoint* calc_nonce(
     const BlsctPubKey* blsct_blinding_pub_key,
     const BlsctScalar* view_key
 );
+
+// stake delegation (cold staking): attach, detect and open the encrypted
+// payload that delegates a staked output to a third-party staker.
+export bool set_unsigned_output_stake_delegation(
+    void* vp_unsigned_output,
+    const BlsctSubAddr* blsct_dest,
+    const BlsctPoint* blsct_delegate_key,
+    const char* reward_address
+);
+export bool is_stake_delegation_data(const uint8_t* data, size_t data_len);
+export BlsctRetVal* build_stake_delegation_data(
+    uint64_t value,
+    const BlsctScalar* gamma,
+    const char* reward_address,
+    const BlsctPoint* delegate_key,
+    const BlsctPoint* nonce
+);
+export BlsctRetVal* recover_stake_delegation_owner_info(
+    const uint8_t* data,
+    size_t data_len,
+    const BlsctPoint* nonce
+);
+export void delete_stake_delegation_owner_info(void* vp_owner_info);
 
 // Misc helper functions
 export uint8_t* hex_to_malloced_buf(const char* hex);

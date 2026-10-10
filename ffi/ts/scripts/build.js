@@ -2,13 +2,14 @@ const fs = require('fs')
 const os = require('os')
 const path = require('path')
 const { execSync, spawnSync } = require('child_process')
+const { readNavioCorePin } = require('./navio-core-pin')
 
 // Configuration
 const IS_PROD = true
 
-// Production: clone by specific SHA from nav-io/navio-core
-// git ls-remote https://github.com/nav-io/navio-core.git refs/heads/master
-const MASTER_SHA = '75e81b5422405d20d7931c31b19527ff03fde73e' // master 2026-09-09 (blst backend, nav-io/navio-core#431 + #432)
+// Production: clone by specific SHA from nav-io/navio-core. Every binding
+// builds from the same commit, pinned in ffi/navio-core.sha.
+const MASTER_SHA = readNavioCorePin()
 const NAVIO_CORE_REPO = IS_PROD
   ? 'https://github.com/nav-io/navio-core'
   : 'https://github.com/gogoex/navio-core'
@@ -45,13 +46,18 @@ function isDarwin() {
   return process.platform === 'darwin'
 }
 
+function isWindows() {
+  return process.platform === 'win32'
+}
+
 function isRoot() {
   return typeof process.getuid === 'function' && process.getuid() === 0
 }
 
 function hasCmd(cmd) {
   try {
-    execSync(`command -v ${cmd}`, { stdio: 'ignore' })
+    // `command -v` is a POSIX shell builtin; cmd.exe has `where` instead.
+    execSync(isWindows() ? `where ${cmd}` : `command -v ${cmd}`, { stdio: 'ignore' })
     return true
   } catch {
     return false
@@ -274,15 +280,23 @@ const getCfg = () => {
   // of them land in the out-of-source build tree: libblsct.a, the vendored
   // supranational/blst (src/blst, built by cmake/blst.cmake — assembly on
   // x86_64/arm64, portable C elsewhere) and univalue.
+  //
+  // On Windows the Visual Studio generator is multi-config: it puts each
+  // archive in a per-configuration subdirectory and names it `<target>.lib`
+  // rather than `lib<target>.a`. binding.gyp names the same files.
+  const archive = (dir, target) => isWindows()
+    ? path.join(dir, 'Release', `${target}.lib`)
+    : path.join(dir, `lib${target}.a`)
+  const libName = (name) => isWindows() ? `${name}.lib` : `lib${name}.a`
   const srcDotAFiles = [
-    path.join(cmakeBuildDir, 'lib', 'libblsct.a'),
-    path.join(cmakeBuildDir, 'src', 'univalue', 'libunivalue.a'),
-    path.join(cmakeBuildDir, 'lib', 'libblst.a'),
+    archive(path.join(cmakeBuildDir, 'lib'), 'blsct'),
+    archive(path.join(cmakeBuildDir, 'src', 'univalue'), 'univalue'),
+    archive(path.join(cmakeBuildDir, 'lib'), 'blst'),
   ]
   const destDotAFiles = [
-    path.join(libsDir, 'libblsct.a'),
-    path.join(libsDir, 'libunivalue_blsct.a'),
-    path.join(libsDir, 'libblst.a'),
+    path.join(libsDir, libName('blsct')),
+    path.join(libsDir, libName('univalue_blsct')),
+    path.join(libsDir, libName('blst')),
   ]
   const libsCacheMetaPath = path.join(libsDir, LIBS_CACHE_META_BASENAME)
 
@@ -313,6 +327,9 @@ const getCfg = () => {
       'build_unsigned_mint_token_output_with_transcript',
       'build_unsigned_mint_nft_output',
       'sign_unsigned_transaction',
+      'set_unsigned_output_stake_delegation',
+      'recover_stake_delegation_owner_info',
+      'get_data_predicate_data',
       'aggregate_transactions',
     ],
   }
@@ -409,9 +426,12 @@ const buildLibBlsct = (cfg, numCpus) => {
   // Build libblsct plus the in-tree static deps the node addon links
   // against (blst is named explicitly: a static library's private link
   // dependency is not built by `--target blsct` alone).
+  // CMAKE_BUILD_TYPE only applies to single-config generators; the Visual
+  // Studio one picks the configuration at build time and defaults to Debug.
   console.log('Building libblsct...')
   const buildRes = spawnSync('cmake', [
     '--build', cfg.cmakeBuildDir,
+    '--config', 'Release',
     '--target', 'blsct', 'blst', 'univalue',
     '-j', String(numCpus),
   ], {
@@ -435,12 +455,36 @@ const buildLibBlsct = (cfg, numCpus) => {
     fs.copyFileSync(src, dest)
   }
 
+  writeCacheMeta(cfg)
+}
+
+const writeCacheMeta = (cfg) => {
   const meta = {
     navioCoreSha: cfg.navioCoreMasterSha,
     cacheVersion: cfg.libsCacheVersion,
     updatedAt: new Date().toISOString(),
   }
   fs.writeFileSync(cfg.libsCacheMetaPath, JSON.stringify(meta, null, 2))
+}
+
+// Install the archives of a libblsct built elsewhere for the same pin (CI
+// builds it once per platform, see .github/actions/libblsct) instead of
+// compiling navio-core here. A build from any other commit is refused.
+const usePrebuiltLibs = (cfg, dir) => {
+  const markerPath = path.join(dir, 'navio-core.sha')
+  const builtSha = fs.existsSync(markerPath) ? fs.readFileSync(markerPath, 'utf8').trim() : ''
+  if (builtSha !== cfg.navioCoreMasterSha) {
+    throw new Error(`BLSCT_PREBUILT_DIR holds libblsct built from '${builtSha}', but the pin is ${cfg.navioCoreMasterSha}`)
+  }
+  const archiveName = (target) => isWindows() ? `${target}.lib` : `lib${target}.a`
+  // Same order as cfg.destDotAFiles: blsct, univalue (as univalue_blsct), blst.
+  const sources = ['blsct', 'univalue', 'blst'].map((target) => path.join(dir, archiveName(target)))
+  fs.mkdirSync(cfg.libsDir, { recursive: true })
+  sources.forEach((src, i) => {
+    console.log(`Copying prebuilt ${src} to ${cfg.destDotAFiles[i]}...`)
+    fs.copyFileSync(src, cfg.destDotAFiles[i])
+  })
+  writeCacheMeta(cfg)
 }
 
 const getSwigVersion = () => {
@@ -605,10 +649,17 @@ const main = () => {
 
   gitCloneNavioCore(cfg)
 
+  if (process.env.BLSCT_PREBUILT_DIR) {
+    usePrebuiltLibs(cfg, process.env.BLSCT_PREBUILT_DIR)
+    buildSwigWrapper(cfg)
+    console.log('\n=== Build complete! ===')
+    return
+  }
+
   // If cached .a files exist and contain the required symbols, reuse them.
   // Otherwise rebuild libblsct from the checked-out navio-core commit.
   const haveAllArchives = cfg.destDotAFiles.every(file => fs.existsSync(file))
-  const cachedLibBlsctPath = path.join(cfg.libsDir, 'libblsct.a')
+  const cachedLibBlsctPath = cfg.destDotAFiles[0]
   const cacheMeta = readCacheMeta(cfg.libsCacheMetaPath)
   const cacheMetaMatches = cacheMeta !== null &&
     cacheMeta.cacheVersion === cfg.libsCacheVersion &&

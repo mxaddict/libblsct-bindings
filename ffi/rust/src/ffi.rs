@@ -27,6 +27,13 @@ pub struct BlsctAmountsRetVal {
 
 #[repr(C)]
 #[derive(Debug)]
+pub struct BlsctStakeDelegationOwnerInfo {
+  pub delegate_key: BlsctPoint,
+  pub reward_address: *mut c_char,
+}
+
+#[repr(C)]
+#[derive(Debug)]
 pub struct BlsctCTxRetVal {
   pub result: u8,
   pub ctx: *mut c_void,
@@ -66,6 +73,7 @@ pub struct BlsctTxOut {
   min_stake: u64,
   subtract_fee_from_amount: bool,
   blinding_key: BlsctScalar,
+  transcript_v2: bool,
 }
 
 #[repr(C)]
@@ -154,6 +162,12 @@ extern "C" {
 
   pub fn build_ctx(void_tx_ins: *const c_void, void_tx_outs: *const c_void) -> *mut BlsctCTxRetVal;
 
+  pub fn build_ctx_with_change(
+    void_tx_ins: *const c_void,
+    void_tx_outs: *const c_void,
+    change_addr: *const BlsctSubAddr,
+  ) -> *mut BlsctCTxRetVal;
+
   pub fn get_ctx_id(vp_ctx: *mut c_void) -> *const c_char;
   pub fn get_ctx_ins(vp_ctx: *mut c_void) -> *const c_void;
   pub fn get_ctx_outs(vp_ctx: *mut c_void) -> *const c_void;
@@ -186,6 +200,7 @@ extern "C" {
   pub fn are_ctx_out_equal(vp_a: *const c_void, vp_b: *const c_void) -> bool;
   pub fn get_ctx_out_value(vp_ctx_out: *const c_void) -> u64;
   pub fn get_ctx_out_script_pub_key(vp_ctx_out: *const c_void) -> *const BlsctScript;
+  pub fn get_ctx_out_script_pub_key_hex(vp_ctx_out: *const c_void) -> *const c_char;
   pub fn get_ctx_out_token_id(vp_ctx_out: *const c_void) -> *const BlsctTokenId;
   pub fn get_ctx_out_vector_predicate(vp_ctx_out: *const c_void) -> *mut BlsctRetVal;
 
@@ -230,7 +245,7 @@ extern "C" {
   pub fn deserialize_point(hex: *const c_char) -> *mut BlsctRetVal;
   pub fn gen_base_point() -> *mut BlsctRetVal;
   pub fn gen_random_point() -> *mut BlsctRetVal;
-  pub fn is_valid_point(blsct_point: *const BlsctPoint) -> c_int;
+  pub fn is_valid_point(blsct_point: *const BlsctPoint) -> bool;
   pub fn point_from_scalar(scalar: *const BlsctScalar) -> *mut BlsctPoint;
   pub fn serialize_point(blsct_point: *const BlsctPoint) -> *const c_char;
   pub fn scalar_muliply_point(
@@ -389,7 +404,8 @@ extern "C" {
   pub fn build_tx_out(
     blsct_dest: *const BlsctSubAddr,
     amount: u64,
-    memo_c_str: *const c_char,
+    memo: *const c_char,
+    memo_len: usize,
     blsct_token_id: *const BlsctTokenId,
     output_type: TxOutputType,
     min_stake: u64,
@@ -425,12 +441,33 @@ extern "C" {
 
   pub fn deserialize_vector_predicate(hex: *const c_char) -> *mut BlsctRetVal;
 
+  pub fn get_data_predicate_data(
+    blsct_vector_predicate: *const BlsctVectorPredicate,
+    obj_size: usize,
+  ) -> *mut BlsctRetVal;
+
+  // Stake delegation
+  pub fn is_stake_delegation_data(data: *const u8, data_len: usize) -> bool;
+  pub fn build_stake_delegation_data(
+    value: u64,
+    gamma: *const BlsctScalar,
+    reward_address: *const c_char,
+    delegate_key: *const BlsctPoint,
+    nonce: *const BlsctPoint,
+  ) -> *mut BlsctRetVal;
+  pub fn recover_stake_delegation_owner_info(
+    data: *const u8,
+    data_len: usize,
+    nonce: *const BlsctPoint,
+  ) -> *mut BlsctRetVal;
+  pub fn delete_stake_delegation_owner_info(vp_owner_info: *mut c_void);
+
   // ViewTag
   pub fn calc_view_tag(blinding_pub_key: *const BlsctPubKey, view_key: *const BlsctScalar) -> u64;
 
   // Misc helper functions
-  pub fn succ(value: *mut c_void, value_size: usize) -> *mut BlsctRetVal;
-  pub fn err_bool(result: u8) -> *mut BlsctRetVal;
+  pub fn blsct_succ(value: *mut c_void, value_size: usize) -> *mut BlsctRetVal;
+  pub fn blsct_err(result: u8) -> *mut BlsctRetVal;
   pub fn hex_to_malloced_buf(hex: *const c_char) -> *mut u8;
   pub fn buf_to_malloced_hex_c_str(buf: *const u8, size: usize) -> *const c_char;
 

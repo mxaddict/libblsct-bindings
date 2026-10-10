@@ -8,9 +8,11 @@ import {
   deserializeUnsignedOutput,
   freeObj,
   serializeUnsignedOutput,
+  setUnsignedOutputStakeDelegation,
 } from './blsct'
 import { PublicKey } from './keys/publicKey'
 import { ManagedObj, unwrapPtr } from './managedObj'
+import { Point } from './point'
 import { Scalar } from './scalar'
 import { freeNativeStringMap, makeNativeStringMap, MetadataMap } from './stringMapUtil'
 import { SubAddr } from './subAddr'
@@ -117,6 +119,26 @@ export class UnsignedOutput extends ManagedObj {
       return output
     } finally {
       freeNativeStringMap(metadataMap)
+    }
+  }
+
+  /** Delegates this staked output to a third-party staker (cold staking):
+   * attaches the encrypted delegation payload as the output's DATA predicate.
+   * Call it before the transaction is signed; the predicate is covered by the
+   * output's signature.
+   * @param destination - The destination the output was built for; it is checked against the output's keys.
+   * @param delegateKey - The staker's public key.
+   * @param rewardAddress - Where the staker must pay the block rewards.
+   * @throws If the output is not a default-token staked commitment, the
+   * destination does not match, or the reward address is empty.
+   */
+  setStakeDelegation(
+    destination: SubAddr,
+    delegateKey: Point,
+    rewardAddress: string
+  ): void {
+    if (!setUnsignedOutputStakeDelegation(this.value(), destination.value(), delegateKey.value(), rewardAddress)) {
+      throw new Error('Failed to set stake delegation on the unsigned output')
     }
   }
 

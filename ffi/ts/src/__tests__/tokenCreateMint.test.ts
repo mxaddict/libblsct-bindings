@@ -42,7 +42,10 @@ const EXPECTED = {
   mintTokenPred: '01893b025f8b6e1213a35891faae194e05779b0121eb5d652695d2fdd97bf93d169ae82f54bbf0ddc8c4669c0db72dbe9640e2010000000000',
   mintNftPred: '02893b025f8b6e1213a35891faae194e05779b0121eb5d652695d2fdd97bf93d169ae82f54bbf0ddc8c4669c0db72dbe962a0000000000000003046e616d6508417274696661637406726172697479096c6567656e64617279037572690d697066733a2f2f516d48617368',
   unsignedInputHash: '906b86a8aa2fe82782cca2f674ad8e485a21cc4d5d3e63353a0e32c8bd526a94',
-  unsignedMintNftOutHash: 'fceaf21b0390229f5eeb58490751429e1561614a2dcc35b910ae9407d32de873',
+  unsignedMintNftOutHash: '0a4d553fa16de13df076c6e613d43c45c266810427764923bd26f35e9c863166',
+  // The same output as serialized before navio-core appended UnsignedOutput's
+  // transcript_v2 flag: everything but that final byte must be unchanged.
+  unsignedMintNftOutHashBeforeTranscriptFlag: 'fceaf21b0390229f5eeb58490751429e1561614a2dcc35b910ae9407d32de873',
 } as const
 
 const COLLECTION_METADATA = { symbol: 'TOK', name: 'Token Collection' }
@@ -140,6 +143,8 @@ describe('Token and NFT create/mint APIs', () => {
 
     expect(sha256Hex(unsignedInput.serialize())).toBe(EXPECTED.unsignedInputHash)
     expect(sha256Hex(mintNftOut.serialize())).toBe(EXPECTED.unsignedMintNftOutHash)
+    expect(mintNftOut.serialize().slice(-2)).toBe('00') // transcript_v2 = false
+    expect(sha256Hex(mintNftOut.serialize().slice(0, -2))).toBe(EXPECTED.unsignedMintNftOutHashBeforeTranscriptFlag)
     expect(createOut.serialize()).toMatch(/^[0-9a-f]+$/)
     expect(mintTokenOut.serialize()).toMatch(/^[0-9a-f]+$/)
     expect(createOut.serialize()).toBe(createOut.serialize())

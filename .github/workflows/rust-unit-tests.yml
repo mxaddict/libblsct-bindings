@@ -1,0 +1,61 @@
+name: 'Rust: Run unit tests'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+    paths:
+      - '.github/actions/libblsct/**'
+      - 'ffi/navio-core.sha'
+      - 'ffi/rust/**'
+      - '.github/workflows/rust-unit-tests.yml'
+      - '!ffi/rust/libs/**'
+      - '!ffi/rust/target/**'
+  pull_request:
+    paths:
+      - '.github/actions/libblsct/**'
+      - 'ffi/navio-core.sha'
+      - 'ffi/rust/**'
+      - '.github/workflows/rust-unit-tests.yml'
+      - '!ffi/rust/libs/**'
+      - '!ffi/rust/target/**'
+
+jobs:
+  rust-run-unit-tests:
+    strategy:
+      # Each OS is its own verdict: one red leg must not cancel the others.
+      fail-fast: false
+      matrix:
+        os: ['ubuntu-24.04', 'macos-15', 'windows-2022']
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ffi/rust
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          clean: true
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      # navio-core's libblsct, built once per runner image and pin and shared
+      # by every binding through the Actions cache (sets BLSCT_PREBUILT_DIR).
+      - name: Build or restore libblsct
+        uses: ./.github/actions/libblsct
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Run tests
+        run: cargo test

@@ -20,6 +20,8 @@ impl_display!(TokenId);
 impl_clone!(TokenId);
 
 impl TokenId {
+  // Generating the token id can fail, so this cannot be Default::default.
+  #[allow(clippy::should_implement_trait)]
   pub fn default<'a>() -> Result<Self, blsct_obj::Error<'a>> {
     let rv = unsafe { gen_default_token_id() };
     let obj = BlsctObj::from_retval(rv)?;

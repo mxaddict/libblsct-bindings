@@ -1768,6 +1768,17 @@ SWIG_From_size_t  (size_t value)
     return static_cast<void*>(&vec->at(idx).gamma);
   }
 
+  // Field readers for the BlsctStakeDelegationOwnerInfo that
+  // recover_stake_delegation_owner_info returns. Both point into the struct,
+  // so copy them before delete_stake_delegation_owner_info.
+  const BlsctPoint* get_stake_delegation_owner_info_delegate_key(const void* vp_owner_info) {
+    return &static_cast<const BlsctStakeDelegationOwnerInfo*>(vp_owner_info)->delegate_key;
+  }
+
+  const char* get_stake_delegation_owner_info_reward_address(const void* vp_owner_info) {
+    return static_cast<const BlsctStakeDelegationOwnerInfo*>(vp_owner_info)->reward_address;
+  }
+
 
 SWIGINTERN
 int SWIG_AsVal_double (SWIGV8_VALUE obj, double *val)
@@ -2840,6 +2851,56 @@ static SwigV8ReturnValue _wrap_get_amount_recovery_result_gamma_ptr(const SwigV8
   arg2 = static_cast< size_t >(val2);result = (void *)get_amount_recovery_result_gamma_ptr(arg1,SWIG_STD_MOVE(*(&arg2)));
   jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_void, 0 |  0 );
   
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_get_stake_delegation_owner_info_delegate_key(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  void *arg1 = 0 ;
+  int res1 ;
+  BlsctPoint *result = 0 ;
+  
+  if (args.Length() < 1 || args.Length() > 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_get_stake_delegation_owner_info_delegate_key.");
+  
+  res1 = SWIG_ConvertPtr(args[0],SWIG_as_voidptrptr(&arg1), 0, 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "get_stake_delegation_owner_info_delegate_key" "', argument " "1"" of type '" "void const *""'"); 
+  }result = (BlsctPoint *)get_stake_delegation_owner_info_delegate_key((void const *)arg1);
+  jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_BlsctPoint, 0 |  0 );
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_get_stake_delegation_owner_info_reward_address(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  void *arg1 = 0 ;
+  int res1 ;
+  char *result = 0 ;
+  
+  if (args.Length() < 1 || args.Length() > 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_get_stake_delegation_owner_info_reward_address.");
+  
+  res1 = SWIG_ConvertPtr(args[0],SWIG_as_voidptrptr(&arg1), 0, 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "get_stake_delegation_owner_info_reward_address" "', argument " "1"" of type '" "void const *""'"); 
+  }result = (char *)get_stake_delegation_owner_info_reward_address((void const *)arg1);
+  jsresult = SWIG_FromCharPtr((const char *)result);
   
   
   SWIGV8_RETURN(jsresult);
@@ -4402,6 +4463,45 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_build_ctx_with_change(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  void *arg1 = 0 ;
+  void *arg2 = 0 ;
+  BlsctSubAddr *arg3 = 0 ;
+  int res1 ;
+  int res2 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  BlsctCTxRetVal *result = 0 ;
+  
+  if (args.Length() < 3 || args.Length() > 3) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_build_ctx_with_change.");
+  
+  res1 = SWIG_ConvertPtr(args[0],SWIG_as_voidptrptr(&arg1), 0, 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "build_ctx_with_change" "', argument " "1"" of type '" "void const *""'"); 
+  }res2 = SWIG_ConvertPtr(args[1],SWIG_as_voidptrptr(&arg2), 0, 0);
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "build_ctx_with_change" "', argument " "2"" of type '" "void const *""'"); 
+  }res3 = SWIG_ConvertPtr(args[2], &argp3,SWIGTYPE_p_BlsctSubAddr, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "build_ctx_with_change" "', argument " "3"" of type '" "BlsctSubAddr const *""'"); 
+  }
+  arg3 = reinterpret_cast< BlsctSubAddr * >(argp3);result = (BlsctCTxRetVal *)build_ctx_with_change((void const *)arg1,(void const *)arg2,(BlsctSubAddr const *)arg3);
+  jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_BlsctCTxRetVal, 0 |  0 );
+  
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_get_ctx_id(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
@@ -5090,6 +5190,31 @@ static SwigV8ReturnValue _wrap_get_ctx_out_script_pub_key(const SwigV8Arguments 
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "get_ctx_out_script_pub_key" "', argument " "1"" of type '" "void const *""'"); 
   }result = (BlsctScript *)get_ctx_out_script_pub_key((void const *)arg1);
   jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_BlsctScript, 0 |  0 );
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_get_ctx_out_script_pub_key_hex(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  void *arg1 = 0 ;
+  int res1 ;
+  char *result = 0 ;
+  
+  if (args.Length() < 1 || args.Length() > 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_get_ctx_out_script_pub_key_hex.");
+  
+  res1 = SWIG_ConvertPtr(args[0],SWIG_as_voidptrptr(&arg1), 0, 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "get_ctx_out_script_pub_key_hex" "', argument " "1"" of type '" "void const *""'"); 
+  }result = (char *)get_ctx_out_script_pub_key_hex((void const *)arg1);
+  jsresult = SWIG_FromCharPtr((const char *)result);
   
   
   SWIGV8_RETURN(jsresult);
@@ -8180,28 +8305,30 @@ static SwigV8ReturnValue _wrap_build_tx_out(const SwigV8Arguments &args) {
   BlsctSubAddr *arg1 = 0 ;
   uint64_t arg2 ;
   char *arg3 = 0 ;
-  BlsctTokenId *arg4 = 0 ;
-  TxOutputType arg5 ;
-  uint64_t arg6 ;
-  bool arg7 ;
-  BlsctScalar *arg8 = 0 ;
+  size_t arg4 ;
+  BlsctTokenId *arg5 = 0 ;
+  TxOutputType arg6 ;
+  uint64_t arg7 ;
+  bool arg8 ;
+  BlsctScalar *arg9 = 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   unsigned long long val2 ;
   int ecode2 = 0 ;
   int res3 ;
   char *buf3 = 0 ;
+  size_t size3 = 0 ;
   int alloc3 = 0 ;
-  void *argp4 = 0 ;
-  int res4 = 0 ;
-  int val5 ;
-  int ecode5 = 0 ;
-  unsigned long long val6 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  int val6 ;
   int ecode6 = 0 ;
-  bool val7 ;
+  unsigned long long val7 ;
   int ecode7 = 0 ;
-  void *argp8 = 0 ;
-  int res8 = 0 ;
+  bool val8 ;
+  int ecode8 = 0 ;
+  void *argp9 = 0 ;
+  int res9 = 0 ;
   BlsctRetVal *result = 0 ;
   
   if (args.Length() < 8 || args.Length() > 8) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_build_tx_out.");
@@ -8214,31 +8341,32 @@ static SwigV8ReturnValue _wrap_build_tx_out(const SwigV8Arguments &args) {
   if (!SWIG_IsOK(ecode2)) {
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "build_tx_out" "', argument " "2"" of type '" "uint64_t""'");
   } 
-  arg2 = static_cast< uint64_t >(val2);res3 = SWIG_AsCharPtrAndSize(args[2], &buf3, NULL, &alloc3);
+  arg2 = static_cast< uint64_t >(val2);res3 = SWIG_AsCharPtrAndSize(args[2], &buf3, &size3, &alloc3);
   if (!SWIG_IsOK(res3)) {
     SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "build_tx_out" "', argument " "3"" of type '" "char const *""'");
   }
-  arg3 = reinterpret_cast< char * >(buf3);res4 = SWIG_ConvertPtr(args[3], &argp4,SWIGTYPE_p_BlsctTokenId, 0 |  0 );
-  if (!SWIG_IsOK(res4)) {
-    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "build_tx_out" "', argument " "4"" of type '" "BlsctTokenId const *""'"); 
+  arg3 = reinterpret_cast< char * >(buf3);
+  arg4 = static_cast< size_t >(size3 - 1);res5 = SWIG_ConvertPtr(args[3], &argp5,SWIGTYPE_p_BlsctTokenId, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "build_tx_out" "', argument " "5"" of type '" "BlsctTokenId const *""'"); 
   }
-  arg4 = reinterpret_cast< BlsctTokenId * >(argp4);ecode5 = SWIG_AsVal_int(args[4], &val5);
-  if (!SWIG_IsOK(ecode5)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "build_tx_out" "', argument " "5"" of type '" "TxOutputType""'");
-  } 
-  arg5 = static_cast< TxOutputType >(val5);ecode6 = SWIG_AsVal_unsigned_SS_long_SS_long(args[5], &val6);
+  arg5 = reinterpret_cast< BlsctTokenId * >(argp5);ecode6 = SWIG_AsVal_int(args[4], &val6);
   if (!SWIG_IsOK(ecode6)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "build_tx_out" "', argument " "6"" of type '" "uint64_t""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode6), "in method '" "build_tx_out" "', argument " "6"" of type '" "TxOutputType""'");
   } 
-  arg6 = static_cast< uint64_t >(val6);ecode7 = SWIG_AsVal_bool(args[6], &val7);
+  arg6 = static_cast< TxOutputType >(val6);ecode7 = SWIG_AsVal_unsigned_SS_long_SS_long(args[5], &val7);
   if (!SWIG_IsOK(ecode7)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "build_tx_out" "', argument " "7"" of type '" "bool""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode7), "in method '" "build_tx_out" "', argument " "7"" of type '" "uint64_t""'");
   } 
-  arg7 = static_cast< bool >(val7);res8 = SWIG_ConvertPtr(args[7], &argp8,SWIGTYPE_p_BlsctScalar, 0 |  0 );
-  if (!SWIG_IsOK(res8)) {
-    SWIG_exception_fail(SWIG_ArgError(res8), "in method '" "build_tx_out" "', argument " "8"" of type '" "BlsctScalar const *""'"); 
+  arg7 = static_cast< uint64_t >(val7);ecode8 = SWIG_AsVal_bool(args[6], &val8);
+  if (!SWIG_IsOK(ecode8)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode8), "in method '" "build_tx_out" "', argument " "8"" of type '" "bool""'");
+  } 
+  arg8 = static_cast< bool >(val8);res9 = SWIG_ConvertPtr(args[7], &argp9,SWIGTYPE_p_BlsctScalar, 0 |  0 );
+  if (!SWIG_IsOK(res9)) {
+    SWIG_exception_fail(SWIG_ArgError(res9), "in method '" "build_tx_out" "', argument " "9"" of type '" "BlsctScalar const *""'"); 
   }
-  arg8 = reinterpret_cast< BlsctScalar * >(argp8);result = (BlsctRetVal *)build_tx_out((BlsctSubAddr const *)arg1,arg2,(char const *)arg3,(BlsctTokenId const *)arg4,arg5,arg6,arg7,(BlsctScalar const *)arg8);
+  arg9 = reinterpret_cast< BlsctScalar * >(argp9);result = (BlsctRetVal *)build_tx_out((BlsctSubAddr const *)arg1,arg2,(char const *)arg3,SWIG_STD_MOVE(*(&arg4)),(BlsctTokenId const *)arg5,arg6,arg7,arg8,(BlsctScalar const *)arg9);
   jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_BlsctRetVal, 0 |  0 );
   
   
@@ -8983,6 +9111,41 @@ static SwigV8ReturnValue _wrap_get_mint_nft_predicate_metadata(const SwigV8Argum
   } 
   arg2 = static_cast< size_t >(val2);result = (void *)get_mint_nft_predicate_metadata((BlsctVectorPredicate const *)arg1,SWIG_STD_MOVE(*(&arg2)));
   jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_void, 0 |  0 );
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_get_data_predicate_data(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  BlsctVectorPredicate *arg1 = 0 ;
+  size_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  size_t val2 ;
+  int ecode2 = 0 ;
+  BlsctRetVal *result = 0 ;
+  
+  if (args.Length() < 2 || args.Length() > 2) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_get_data_predicate_data.");
+  
+  res1 = SWIG_ConvertPtr(args[0], &argp1,SWIGTYPE_p_BlsctVectorPredicate, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "get_data_predicate_data" "', argument " "1"" of type '" "BlsctVectorPredicate const *""'"); 
+  }
+  arg1 = reinterpret_cast< BlsctVectorPredicate * >(argp1);ecode2 = SWIG_AsVal_size_t(args[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "get_data_predicate_data" "', argument " "2"" of type '" "size_t""'");
+  } 
+  arg2 = static_cast< size_t >(val2);result = (BlsctRetVal *)get_data_predicate_data((BlsctVectorPredicate const *)arg1,SWIG_STD_MOVE(*(&arg2)));
+  jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_BlsctRetVal, 0 |  0 );
   
   
   
@@ -10005,6 +10168,218 @@ fail:
 }
 
 
+static SwigV8ReturnValue _wrap_set_unsigned_output_stake_delegation(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  void *arg1 = 0 ;
+  BlsctSubAddr *arg2 = 0 ;
+  BlsctPoint *arg3 = 0 ;
+  char *arg4 = 0 ;
+  int res1 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  int res4 ;
+  char *buf4 = 0 ;
+  int alloc4 = 0 ;
+  bool result;
+  
+  if (args.Length() < 4 || args.Length() > 4) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_set_unsigned_output_stake_delegation.");
+  
+  res1 = SWIG_ConvertPtr(args[0],SWIG_as_voidptrptr(&arg1), 0, 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "set_unsigned_output_stake_delegation" "', argument " "1"" of type '" "void *""'"); 
+  }res2 = SWIG_ConvertPtr(args[1], &argp2,SWIGTYPE_p_BlsctSubAddr, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "set_unsigned_output_stake_delegation" "', argument " "2"" of type '" "BlsctSubAddr const *""'"); 
+  }
+  arg2 = reinterpret_cast< BlsctSubAddr * >(argp2);res3 = SWIG_ConvertPtr(args[2], &argp3,SWIGTYPE_p_BlsctPoint, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "set_unsigned_output_stake_delegation" "', argument " "3"" of type '" "BlsctPoint const *""'"); 
+  }
+  arg3 = reinterpret_cast< BlsctPoint * >(argp3);res4 = SWIG_AsCharPtrAndSize(args[3], &buf4, NULL, &alloc4);
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "set_unsigned_output_stake_delegation" "', argument " "4"" of type '" "char const *""'");
+  }
+  arg4 = reinterpret_cast< char * >(buf4);result = (bool)set_unsigned_output_stake_delegation(arg1,(BlsctSubAddr const *)arg2,(BlsctPoint const *)arg3,(char const *)arg4);
+  jsresult = SWIG_From_bool(static_cast< bool >(result));
+  
+  
+  
+  if (alloc4 == SWIG_NEWOBJ) delete[] buf4;
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_is_stake_delegation_data(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  uint8_t *arg1 = 0 ;
+  size_t arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  size_t val2 ;
+  int ecode2 = 0 ;
+  bool result;
+  
+  if (args.Length() < 2 || args.Length() > 2) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_is_stake_delegation_data.");
+  
+  res1 = SWIG_ConvertPtr(args[0], &argp1,SWIGTYPE_p_unsigned_char, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "is_stake_delegation_data" "', argument " "1"" of type '" "uint8_t const *""'"); 
+  }
+  arg1 = reinterpret_cast< uint8_t * >(argp1);ecode2 = SWIG_AsVal_size_t(args[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "is_stake_delegation_data" "', argument " "2"" of type '" "size_t""'");
+  } 
+  arg2 = static_cast< size_t >(val2);result = (bool)is_stake_delegation_data((unsigned char const *)arg1,SWIG_STD_MOVE(*(&arg2)));
+  jsresult = SWIG_From_bool(static_cast< bool >(result));
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_build_stake_delegation_data(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  uint64_t arg1 ;
+  BlsctScalar *arg2 = 0 ;
+  char *arg3 = 0 ;
+  BlsctPoint *arg4 = 0 ;
+  BlsctPoint *arg5 = 0 ;
+  unsigned long long val1 ;
+  int ecode1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  int res3 ;
+  char *buf3 = 0 ;
+  int alloc3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  BlsctRetVal *result = 0 ;
+  
+  if (args.Length() < 5 || args.Length() > 5) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_build_stake_delegation_data.");
+  
+  ecode1 = SWIG_AsVal_unsigned_SS_long_SS_long(args[0], &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "build_stake_delegation_data" "', argument " "1"" of type '" "uint64_t""'");
+  } 
+  arg1 = static_cast< uint64_t >(val1);res2 = SWIG_ConvertPtr(args[1], &argp2,SWIGTYPE_p_BlsctScalar, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "build_stake_delegation_data" "', argument " "2"" of type '" "BlsctScalar const *""'"); 
+  }
+  arg2 = reinterpret_cast< BlsctScalar * >(argp2);res3 = SWIG_AsCharPtrAndSize(args[2], &buf3, NULL, &alloc3);
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "build_stake_delegation_data" "', argument " "3"" of type '" "char const *""'");
+  }
+  arg3 = reinterpret_cast< char * >(buf3);res4 = SWIG_ConvertPtr(args[3], &argp4,SWIGTYPE_p_BlsctPoint, 0 |  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "build_stake_delegation_data" "', argument " "4"" of type '" "BlsctPoint const *""'"); 
+  }
+  arg4 = reinterpret_cast< BlsctPoint * >(argp4);res5 = SWIG_ConvertPtr(args[4], &argp5,SWIGTYPE_p_BlsctPoint, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "build_stake_delegation_data" "', argument " "5"" of type '" "BlsctPoint const *""'"); 
+  }
+  arg5 = reinterpret_cast< BlsctPoint * >(argp5);result = (BlsctRetVal *)build_stake_delegation_data(arg1,(BlsctScalar const *)arg2,(char const *)arg3,(BlsctPoint const *)arg4,(BlsctPoint const *)arg5);
+  jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_BlsctRetVal, 0 |  0 );
+  
+  
+  if (alloc3 == SWIG_NEWOBJ) delete[] buf3;
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_recover_stake_delegation_owner_info(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  uint8_t *arg1 = 0 ;
+  size_t arg2 ;
+  BlsctPoint *arg3 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  size_t val2 ;
+  int ecode2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  BlsctRetVal *result = 0 ;
+  
+  if (args.Length() < 3 || args.Length() > 3) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_recover_stake_delegation_owner_info.");
+  
+  res1 = SWIG_ConvertPtr(args[0], &argp1,SWIGTYPE_p_unsigned_char, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "recover_stake_delegation_owner_info" "', argument " "1"" of type '" "uint8_t const *""'"); 
+  }
+  arg1 = reinterpret_cast< uint8_t * >(argp1);ecode2 = SWIG_AsVal_size_t(args[1], &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "recover_stake_delegation_owner_info" "', argument " "2"" of type '" "size_t""'");
+  } 
+  arg2 = static_cast< size_t >(val2);res3 = SWIG_ConvertPtr(args[2], &argp3,SWIGTYPE_p_BlsctPoint, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "recover_stake_delegation_owner_info" "', argument " "3"" of type '" "BlsctPoint const *""'"); 
+  }
+  arg3 = reinterpret_cast< BlsctPoint * >(argp3);result = (BlsctRetVal *)recover_stake_delegation_owner_info((unsigned char const *)arg1,SWIG_STD_MOVE(*(&arg2)),(BlsctPoint const *)arg3);
+  jsresult = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_BlsctRetVal, 0 |  0 );
+  
+  
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
+static SwigV8ReturnValue _wrap_delete_stake_delegation_owner_info(const SwigV8Arguments &args) {
+  SWIGV8_HANDLESCOPE();
+  
+  SWIGV8_VALUE jsresult;
+  void *arg1 = 0 ;
+  int res1 ;
+  
+  if (args.Length() < 1 || args.Length() > 1) SWIG_exception_fail(SWIG_ERROR, "Illegal number of arguments for _wrap_delete_stake_delegation_owner_info.");
+  
+  res1 = SWIG_ConvertPtr(args[0],SWIG_as_voidptrptr(&arg1), 0, 0);
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "delete_stake_delegation_owner_info" "', argument " "1"" of type '" "void *""'"); 
+  }delete_stake_delegation_owner_info(arg1);
+  jsresult = SWIGV8_UNDEFINED();
+  
+  
+  SWIGV8_RETURN(jsresult);
+  
+  goto fail;
+fail:
+  SWIGV8_RETURN(SWIGV8_UNDEFINED());
+}
+
+
 static SwigV8ReturnValue _wrap_hex_to_malloced_buf(const SwigV8Arguments &args) {
   SWIGV8_HANDLESCOPE();
   
@@ -10893,6 +11268,8 @@ SWIGV8_AddStaticFunction(exports_obj, "cast_to_amount_recovery_req", _wrap_cast_
 SWIGV8_AddStaticFunction(exports_obj, "cast_to_size_t", _wrap_cast_to_size_t, context);
 SWIGV8_AddStaticFunction(exports_obj, "cast_to_const_char_ptr", _wrap_cast_to_const_char_ptr, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_amount_recovery_result_gamma_ptr", _wrap_get_amount_recovery_result_gamma_ptr, context);
+SWIGV8_AddStaticFunction(exports_obj, "get_stake_delegation_owner_info_delegate_key", _wrap_get_stake_delegation_owner_info_delegate_key, context);
+SWIGV8_AddStaticFunction(exports_obj, "get_stake_delegation_owner_info_reward_address", _wrap_get_stake_delegation_owner_info_reward_address, context);
 SWIGV8_AddStaticFunction(exports_obj, "free_obj", _wrap_free_obj, context);
 SWIGV8_AddStaticFunction(exports_obj, "free_amounts_ret_val", _wrap_free_amounts_ret_val, context);
 SWIGV8_AddStaticFunction(exports_obj, "init", _wrap_init, context);
@@ -10917,6 +11294,7 @@ SWIGV8_AddStaticFunction(exports_obj, "create_tx_out_vec", _wrap_create_tx_out_v
 SWIGV8_AddStaticFunction(exports_obj, "add_to_tx_out_vec", _wrap_add_to_tx_out_vec, context);
 SWIGV8_AddStaticFunction(exports_obj, "delete_tx_out_vec", _wrap_delete_tx_out_vec, context);
 SWIGV8_AddStaticFunction(exports_obj, "build_ctx", _wrap_build_ctx, context);
+SWIGV8_AddStaticFunction(exports_obj, "build_ctx_with_change", _wrap_build_ctx_with_change, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_id", _wrap_get_ctx_id, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_ins", _wrap_get_ctx_ins, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_outs", _wrap_get_ctx_outs, context);
@@ -10943,6 +11321,7 @@ SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_at", _wrap_get_ctx_out_at, co
 SWIGV8_AddStaticFunction(exports_obj, "are_ctx_out_equal", _wrap_are_ctx_out_equal, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_value", _wrap_get_ctx_out_value, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_script_pub_key", _wrap_get_ctx_out_script_pub_key, context);
+SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_script_pub_key_hex", _wrap_get_ctx_out_script_pub_key_hex, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_token_id", _wrap_get_ctx_out_token_id, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_vector_predicate", _wrap_get_ctx_out_vector_predicate, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_ctx_out_spending_key", _wrap_get_ctx_out_spending_key, context);
@@ -11070,6 +11449,7 @@ SWIGV8_AddStaticFunction(exports_obj, "get_mint_token_predicate_amount", _wrap_g
 SWIGV8_AddStaticFunction(exports_obj, "get_mint_nft_predicate_public_key", _wrap_get_mint_nft_predicate_public_key, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_mint_nft_predicate_nft_id", _wrap_get_mint_nft_predicate_nft_id, context);
 SWIGV8_AddStaticFunction(exports_obj, "get_mint_nft_predicate_metadata", _wrap_get_mint_nft_predicate_metadata, context);
+SWIGV8_AddStaticFunction(exports_obj, "get_data_predicate_data", _wrap_get_data_predicate_data, context);
 SWIGV8_AddStaticFunction(exports_obj, "build_unsigned_input", _wrap_build_unsigned_input, context);
 SWIGV8_AddStaticFunction(exports_obj, "delete_unsigned_input", _wrap_delete_unsigned_input, context);
 SWIGV8_AddStaticFunction(exports_obj, "serialize_unsigned_input", _wrap_serialize_unsigned_input, context);
@@ -11102,6 +11482,11 @@ SWIGV8_AddStaticFunction(exports_obj, "from_tx_key_to_spending_key", _wrap_from_
 SWIGV8_AddStaticFunction(exports_obj, "calc_priv_spending_key", _wrap_calc_priv_spending_key, context);
 SWIGV8_AddStaticFunction(exports_obj, "calc_view_tag", _wrap_calc_view_tag, context);
 SWIGV8_AddStaticFunction(exports_obj, "calc_nonce", _wrap_calc_nonce, context);
+SWIGV8_AddStaticFunction(exports_obj, "set_unsigned_output_stake_delegation", _wrap_set_unsigned_output_stake_delegation, context);
+SWIGV8_AddStaticFunction(exports_obj, "is_stake_delegation_data", _wrap_is_stake_delegation_data, context);
+SWIGV8_AddStaticFunction(exports_obj, "build_stake_delegation_data", _wrap_build_stake_delegation_data, context);
+SWIGV8_AddStaticFunction(exports_obj, "recover_stake_delegation_owner_info", _wrap_recover_stake_delegation_owner_info, context);
+SWIGV8_AddStaticFunction(exports_obj, "delete_stake_delegation_owner_info", _wrap_delete_stake_delegation_owner_info, context);
 SWIGV8_AddStaticFunction(exports_obj, "hex_to_malloced_buf", _wrap_hex_to_malloced_buf, context);
 SWIGV8_AddStaticFunction(exports_obj, "buf_to_malloced_hex_c_str", _wrap_buf_to_malloced_hex_c_str, context);
 SWIGV8_AddStaticFunction(exports_obj, "create_uint64_vec", _wrap_create_uint64_vec, context);

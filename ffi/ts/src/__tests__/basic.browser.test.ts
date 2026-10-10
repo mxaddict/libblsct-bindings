@@ -336,6 +336,20 @@ describe('Browser WASM Module', () => {
       expect(txOut).toBeDefined();
     });
 
+    it('should round-trip a memo with multi-byte characters', () => {
+      requireWasm();
+      const subAddr = blsctBrowser.SubAddr.fromDoublePublicKey(new blsctBrowser.DoublePublicKey());
+      const memo = 'navio ナビオ \u{1F680}';
+      const txOut = blsctBrowser.TxOut.generate(subAddr, 1000, memo);
+      expect(txOut.getMemo()).toBe(memo);
+    });
+
+    it('should reject a memo with an embedded NUL', () => {
+      requireWasm();
+      const subAddr = blsctBrowser.SubAddr.fromDoublePublicKey(new blsctBrowser.DoublePublicKey());
+      expect(() => blsctBrowser.TxOut.generate(subAddr, 1000, 'nav\0io')).toThrow();
+    });
+
     it('should aggregate signed transactions', () => {
       requireWasm();
 
@@ -384,6 +398,100 @@ describe('Browser WASM Module', () => {
       const aggregatedTx = blsctBrowser.CTx.deserialize(aggregatedHex);
       expect(aggregatedTx.getCTxIns().size()).toBe(2);
       expect(aggregatedTx.getCTxOuts().size()).toBe(3);
+    });
+  });
+
+  describe('Stake Delegation', () => {
+    const STAKE = 1_000_000_000_000;
+
+    const genDest = () =>
+      blsctBrowser.SubAddr.generate(
+        blsctBrowser.Scalar.random(),
+        blsctBrowser.PublicKey.random(),
+        blsctBrowser.SubAddrId.generate(0, 0)
+      );
+
+    it('should open a delegation payload to its owner', () => {
+      requireWasm();
+      const delegateKey = blsctBrowser.Point.random();
+      const nonce = blsctBrowser.Point.random();
+      const dataHex = blsctBrowser.buildStakeDelegationDataHex(
+        STAKE, blsctBrowser.Scalar.random(), 'reward-address', delegateKey, nonce
+      );
+
+      expect(blsctBrowser.isStakeDelegationDataHex(dataHex)).toBe(true);
+      expect(blsctBrowser.isStakeDelegationDataHex('00ff')).toBe(false);
+      // Reads both fields of the owner-info struct from WASM memory.
+      const info = blsctBrowser.parseStakeDelegationOwnerInfo(dataHex, nonce);
+      expect(info.delegateKey.equals(delegateKey)).toBe(true);
+      expect(info.rewardAddress).toBe('reward-address');
+      expect(() =>
+        blsctBrowser.parseStakeDelegationOwnerInfo(dataHex, blsctBrowser.Point.random())
+      ).toThrow();
+    });
+
+    it('should delegate a staked output and refuse a normal one', () => {
+      requireWasm();
+      const dest = genDest();
+      const genOutput = (outputType: number) =>
+        blsctBrowser.UnsignedOutput.fromTxOut(
+          blsctBrowser.TxOut.generate(dest, STAKE, '', undefined, outputType, STAKE, false, blsctBrowser.Scalar.random())
+        );
+
+      const staked = genOutput(blsctBrowser.TxOutputType.StakedCommitment);
+      const before = staked.serialize();
+      staked.setStakeDelegation(dest, blsctBrowser.Point.random(), 'reward-address');
+      expect(staked.serialize()).not.toBe(before);
+
+      const normal = genOutput(blsctBrowser.TxOutputType.Normal);
+      expect(() =>
+        normal.setStakeDelegation(dest, blsctBrowser.Point.random(), 'reward-address')
+      ).toThrow();
+    });
+
+    it('should let the owner recover the delegation from the signed transaction', () => {
+      requireWasm();
+      const viewKey = blsctBrowser.Scalar.random();
+      const dest = blsctBrowser.SubAddr.generate(
+        viewKey,
+        blsctBrowser.PublicKey.random(),
+        blsctBrowser.SubAddrId.generate(0, 0)
+      );
+      const delegateKey = blsctBrowser.Point.random();
+      const fee = 1000;
+
+      const output = blsctBrowser.UnsignedOutput.fromTxOut(
+        blsctBrowser.TxOut.generate(
+          dest, STAKE, '', undefined, blsctBrowser.TxOutputType.StakedCommitment, STAKE, false,
+          blsctBrowser.Scalar.random()
+        )
+      );
+      output.setStakeDelegation(dest, delegateKey, 'reward-address');
+      const outPoint = blsctBrowser.OutPoint.generate(blsctBrowser.CTxId.deserialize('52'.repeat(32)));
+      const txIn = blsctBrowser.TxIn.generate(
+        STAKE + fee, new blsctBrowser.Scalar(100), new blsctBrowser.Scalar(101),
+        blsctBrowser.TokenId.default(), outPoint, false, false
+      );
+      const unsignedTx = blsctBrowser.UnsignedTransaction.create();
+      unsignedTx.addInput(blsctBrowser.UnsignedInput.fromTxIn(txIn));
+      unsignedTx.addOutput(output);
+      unsignedTx.setFee(fee);
+      const outs = blsctBrowser.CTx.deserialize(unsignedTx.sign()).getCTxOuts();
+
+      const delegated = Array.from({ length: outs.size() }, (_, i) => outs.at(i)).filter((out: any) => {
+        const predicateHex = out.getVectorPredicate();
+        return predicateHex !== '' &&
+          blsctBrowser.getPredicateType(predicateHex) === blsctBrowser.BlsctPredicateType.BlsctDataPredicateType;
+      });
+      expect(delegated).toHaveLength(1);
+      expect(delegated[0].getScriptPubKeyHex()).toMatch(/^b94d[0-9a-f]+51$/);
+      const dataHex = blsctBrowser.parseDataPredicateData(delegated[0].getVectorPredicate());
+      const nonce = blsctBrowser.PublicKey.fromPoint(delegated[0].getBlindingKey())
+        .generateNonce(viewKey)
+        .getPoint();
+      const info = blsctBrowser.parseStakeDelegationOwnerInfo(dataHex, nonce);
+      expect(info.delegateKey.equals(delegateKey)).toBe(true);
+      expect(info.rewardAddress).toBe('reward-address');
     });
   });
 

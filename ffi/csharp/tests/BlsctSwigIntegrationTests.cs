@@ -1293,6 +1293,206 @@ public sealed class BlsctSwigIntegrationTests : IClassFixture<BlsctTestFixture>
         BlsctFree.FreeObj(txOutVal);
     }
 
+    [Theory]
+    [InlineData("navio ナビオ \U0001F680", true)]
+    [InlineData("nav\0io", false)]
+    public void TxOut_MemoCrossesWithItsByteLength(string memo, bool accepted)
+    {
+        var rvSeed = blsct.gen_scalar(12345);
+        var seed = blsct.cast_to_scalar(AssertSuccess(rvSeed));
+        var childKey = blsct.from_seed_to_child_key(seed);
+        var txKey = blsct.from_child_key_to_tx_key(childKey);
+        var viewKey = blsct.from_tx_key_to_view_key(txKey);
+        var spendKey = blsct.from_tx_key_to_spending_key(txKey);
+        var spendPk = blsct.scalar_to_pub_key(spendKey);
+        var subAddrId = blsct.gen_sub_addr_id(0, 0);
+        var subAddr = blsct.derive_sub_address(viewKey, spendPk, subAddrId);
+        var rvTid = blsct.gen_default_token_id();
+        var tokenId = blsct.cast_to_token_id(AssertSuccess(rvTid));
+        var rvBlindKey = blsct.gen_random_scalar();
+        var blindKey = blsct.cast_to_scalar(AssertSuccess(rvBlindKey));
+
+        var rvTxOut = blsct.build_tx_out(subAddr, 12345, memo, tokenId,
+            TxOutputType.Normal, 0, false, blindKey);
+        if (accepted)
+        {
+            var txOutVal = AssertSuccess(rvTxOut);
+            Assert.Equal(memo, blsct.get_tx_out_memo(blsct.cast_to_tx_out(txOutVal)));
+            BlsctFree.FreeObj(txOutVal);
+        }
+        else
+        {
+            Assert.NotEqual(0, (int)rvTxOut.result);
+        }
+
+        BlsctFree.FreeObj(rvSeed.value);
+        BlsctFree.FreeObj(rvTid.value);
+        BlsctFree.FreeObj(rvBlindKey.value);
+        BlsctFree.FreeObj(spendKey);
+        BlsctFree.FreeObj(spendPk);
+        BlsctFree.FreeObj(subAddrId);
+        BlsctFree.FreeObj(subAddr);
+    }
+
+    // =========================================================================
+    // Stake delegation (cold staking)
+    // =========================================================================
+
+    private const ulong Stake = 1_000_000_000_000;
+
+    private static SWIGTYPE_p_BlsctSubAddr RandomSubAddr()
+    {
+        var viewKey = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+        var spendKey = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+        var spendPk = blsct.scalar_to_pub_key(spendKey);
+        return blsct.derive_sub_address(viewKey, spendPk, blsct.gen_sub_addr_id(0, 0));
+    }
+
+    private static SWIGTYPE_p_BlsctPoint RandomPoint() =>
+        blsct.cast_to_point(AssertSuccess(blsct.gen_random_point()));
+
+    [Fact]
+    public void StakeDelegation_PayloadOpensToItsOwner()
+    {
+        var delegateKey = RandomPoint();
+        var nonce = RandomPoint();
+        var gamma = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+
+        var rvData = blsct.build_stake_delegation_data(Stake, gamma, "reward-address", delegateKey, nonce);
+        var data = blsct.cast_to_uint8_t_ptr(AssertSuccess(rvData));
+        var dataLen = rvData.value_size;
+        Assert.True(blsct.is_stake_delegation_data(data, dataLen));
+
+        var rvInfo = blsct.recover_stake_delegation_owner_info(data, dataLen, nonce);
+        var info = AssertSuccess(rvInfo);
+        Assert.Equal(
+            blsct.serialize_point(delegateKey),
+            blsct.serialize_point(blsct.get_stake_delegation_owner_info_delegate_key(info)));
+        Assert.Equal("reward-address", blsct.get_stake_delegation_owner_info_reward_address(info));
+        blsct.delete_stake_delegation_owner_info(info);
+
+        var rvWrong = blsct.recover_stake_delegation_owner_info(data, dataLen, RandomPoint());
+        Assert.NotEqual(0, (int)rvWrong.result);
+
+        BlsctFree.FreeObj(rvData.value);
+    }
+
+    [Fact]
+    public void StakeDelegation_OtherDataIsNotAPayload()
+    {
+        var buf = blsct.hex_to_malloced_buf("00ff");
+        Assert.False(blsct.is_stake_delegation_data(buf, 2));
+        Assert.NotEqual(0, (int)blsct.recover_stake_delegation_owner_info(buf, 2, RandomPoint()).result);
+        BlsctFree.FreeObj(buf);
+
+        var gamma = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+        var rvEmptyReward = blsct.build_stake_delegation_data(Stake, gamma, "", RandomPoint(), RandomPoint());
+        Assert.NotEqual(0, (int)rvEmptyReward.result);
+    }
+
+    [Fact]
+    public void StakeDelegation_SetOnUnsignedOutput()
+    {
+        var dest = RandomSubAddr();
+        var tokenId = blsct.cast_to_token_id(AssertSuccess(blsct.gen_default_token_id()));
+
+        SWIGTYPE_p_void UnsignedOutput(TxOutputType outputType)
+        {
+            var blindKey = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+            var txOut = blsct.cast_to_tx_out(AssertSuccess(
+                blsct.build_tx_out(dest, Stake, "", tokenId, outputType, Stake, false, blindKey)));
+            return AssertSuccess(blsct.build_unsigned_output(txOut));
+        }
+
+        var staked = UnsignedOutput(TxOutputType.StakedCommitment);
+        var normal = UnsignedOutput(TxOutputType.Normal);
+        var delegateKey = RandomPoint();
+
+        var before = blsct.serialize_unsigned_output(staked);
+        Assert.True(blsct.set_unsigned_output_stake_delegation(staked, dest, delegateKey, "reward-address"));
+        Assert.NotEqual(before, blsct.serialize_unsigned_output(staked));
+
+        Assert.False(blsct.set_unsigned_output_stake_delegation(normal, dest, delegateKey, "reward-address"));
+        Assert.False(blsct.set_unsigned_output_stake_delegation(staked, RandomSubAddr(), delegateKey, "reward-address"));
+        Assert.False(blsct.set_unsigned_output_stake_delegation(staked, dest, delegateKey, ""));
+
+        blsct.delete_unsigned_output(staked);
+        blsct.delete_unsigned_output(normal);
+    }
+
+    [Fact]
+    public void StakeDelegation_OwnerRecoversFromSignedTransaction()
+    {
+        var viewKey = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+        var spendPk = blsct.scalar_to_pub_key(blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar())));
+        var dest = blsct.derive_sub_address(viewKey, spendPk, blsct.gen_sub_addr_id(0, 0));
+        var tokenId = blsct.cast_to_token_id(AssertSuccess(blsct.gen_default_token_id()));
+        var delegateKey = RandomPoint();
+        const ulong fee = 1000;
+
+        var blindKey = blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar()));
+        var txOut = blsct.cast_to_tx_out(AssertSuccess(
+            blsct.build_tx_out(dest, Stake, "", tokenId, TxOutputType.StakedCommitment, Stake, false, blindKey)));
+        var unsignedOut = AssertSuccess(blsct.build_unsigned_output(txOut));
+        Assert.True(blsct.set_unsigned_output_stake_delegation(unsignedOut, dest, delegateKey, "reward-address"));
+
+        var gamma = blsct.cast_to_scalar(AssertSuccess(blsct.gen_scalar(100)));
+        var spendKey = blsct.cast_to_scalar(AssertSuccess(blsct.gen_scalar(101)));
+        var outPoint = blsct.cast_to_out_point(AssertSuccess(blsct.gen_out_point(new string('5', 64))));
+        var txIn = blsct.cast_to_tx_in(AssertSuccess(
+            blsct.build_tx_in(Stake + fee, gamma, spendKey, tokenId, outPoint, false, false)));
+        var unsignedTx = blsct.create_unsigned_transaction();
+        blsct.add_unsigned_transaction_input(unsignedTx, AssertSuccess(blsct.build_unsigned_input(txIn)));
+        blsct.add_unsigned_transaction_output(unsignedTx, unsignedOut);
+        blsct.set_unsigned_transaction_fee(unsignedTx, fee);
+        var signedHex = blsct.cast_to_const_char_ptr(AssertSuccess(blsct.sign_unsigned_transaction(unsignedTx)));
+        blsct.delete_unsigned_transaction(unsignedTx);
+
+        // Scan the outputs as a syncing wallet would.
+        var outs = blsct.get_ctx_outs(AssertSuccess(blsct.deserialize_ctx(signedHex)));
+        var recovered = 0;
+        for (uint i = 0; i < blsct.get_ctx_outs_size(outs); i++)
+        {
+            var output = blsct.get_ctx_out_at(outs, i);
+            var rvPredicate = blsct.get_ctx_out_vector_predicate(output);
+            if (rvPredicate.result != 0 || rvPredicate.value_size == 0) continue;
+            var predicate = blsct.cast_to_vector_predicate(rvPredicate.value);
+            if (blsct.get_vector_predicate_type(predicate, rvPredicate.value_size) != BlsctPredicateType.BlsctDataPredicateType)
+                continue;
+
+            // A staked commitment's whole script: OP_STAKED_COMMITMENT,
+            // OP_PUSHDATA2 with the commitment's range proof, OP_TRUE.
+            var script = blsct.get_ctx_out_script_pub_key_hex(output);
+            Assert.StartsWith("b94d", script);
+            Assert.EndsWith("51", script);
+
+            var rvData = blsct.get_data_predicate_data(predicate, rvPredicate.value_size);
+            var data = blsct.cast_to_uint8_t_ptr(AssertSuccess(rvData));
+            Assert.True(blsct.is_stake_delegation_data(data, rvData.value_size));
+
+            // The owner's nonce: the output's blinding key times the view key.
+            var nonce = blsct.calc_nonce(blsct.point_to_public_key(blsct.get_ctx_out_blinding_key(output)), viewKey);
+            var info = AssertSuccess(blsct.recover_stake_delegation_owner_info(data, rvData.value_size, nonce));
+            Assert.Equal(
+                blsct.serialize_point(delegateKey),
+                blsct.serialize_point(blsct.get_stake_delegation_owner_info_delegate_key(info)));
+            Assert.Equal("reward-address", blsct.get_stake_delegation_owner_info_reward_address(info));
+            blsct.delete_stake_delegation_owner_info(info);
+            recovered++;
+        }
+        Assert.Equal(1, recovered);
+    }
+
+    [Fact]
+    public void DataPredicateData_RefusesOtherPredicates()
+    {
+        var spendPk = blsct.scalar_to_pub_key(blsct.cast_to_scalar(AssertSuccess(blsct.gen_random_scalar())));
+        var rvPredicate = blsct.build_mint_token_predicate(spendPk, 5);
+        var predicate = blsct.cast_to_vector_predicate(AssertSuccess(rvPredicate));
+        Assert.NotEqual(0, (int)blsct.get_data_predicate_data(predicate, rvPredicate.value_size).result);
+        BlsctFree.FreeObj(rvPredicate.value);
+    }
+
     // =========================================================================
     // Unsigned Transaction build/sign
     // =========================================================================

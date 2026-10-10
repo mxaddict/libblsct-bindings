@@ -83,3 +83,14 @@ test('serialize and deserialize', () => {
   expect(a_hex).toBe(b_hex)
 })
 
+test('memo with multi-byte characters round-trips', () => {
+  const subAddr = SubAddr.generate(Scalar.random(), PublicKey.random(), SubAddrId.generate(1, 2))
+  const memo = 'navio ナビオ \u{1F680}'
+  const x = TxOut.generate(subAddr, 12345, memo)
+  expect(x.getMemo()).toBe(memo)
+})
+
+test('memo with an embedded NUL is rejected', () => {
+  const subAddr = SubAddr.generate(Scalar.random(), PublicKey.random(), SubAddrId.generate(1, 2))
+  expect(() => TxOut.generate(subAddr, 12345, 'nav\0io')).toThrow()
+})

@@ -34,11 +34,18 @@ from .range_proof import RangeProof
 from .scalar import Scalar
 from .script import Script
 from .signature import Signature
+from .stake_delegation import (
+  build_stake_delegation_data_hex,
+  is_stake_delegation_data_hex,
+  parse_stake_delegation_owner_info,
+  StakeDelegationOwnerInfo,
+)
 from .sub_addr import SubAddr
 from .sub_addr_id import SubAddrId
 from .token_id import TokenId
 from .tx_in import TxIn
 from .tx_out import TxOut, TxOutputType
+from .vector_predicate import parse_data_predicate_data
 from .view_tag import ViewTag
 
 # inject the swig module constants, functions and etc into the current namespace 

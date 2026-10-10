@@ -16,6 +16,9 @@ on the BLS12-381 curve.
 - Node.js v18 or higher
 - g++, make, swig, autoconf, automake, libtool and pkg-config to build
   underlying C++ libraries
+- On Windows: Visual Studio 2022 (or its Build Tools) with the "Desktop
+  development with C++" workload, CMake and git. SWIG is only needed to
+  regenerate the bundled wrapper.
 
 ### Browser
 

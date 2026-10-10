@@ -2,10 +2,11 @@ use crate::{
   blsct_obj::{self, BlsctObj},
   blsct_serde::BlsctSerde,
   ffi::{
-    buf_to_malloced_hex_c_str, build_tx_out, err_bool, get_tx_out_amount, get_tx_out_blinding_key,
-    get_tx_out_destination, get_tx_out_memo, get_tx_out_min_stake, get_tx_out_output_type,
-    get_tx_out_subtract_fee_from_amount, get_tx_out_token_id, hex_to_malloced_buf, succ,
-    BlsctRetVal, BlsctScalar, BlsctSubAddr, BlsctTokenId, BlsctTxOut, TxOutputType, BLSCT_FAILURE,
+    blsct_err, blsct_succ, buf_to_malloced_hex_c_str, build_tx_out, get_tx_out_amount,
+    get_tx_out_blinding_key, get_tx_out_destination, get_tx_out_memo, get_tx_out_min_stake,
+    get_tx_out_output_type, get_tx_out_subtract_fee_from_amount, get_tx_out_token_id,
+    hex_to_malloced_buf, BlsctRetVal, BlsctScalar, BlsctSubAddr, BlsctTokenId, BlsctTxOut,
+    TxOutputType, BLSCT_FAILURE,
   },
   macros::{impl_clone, impl_display, impl_from_retval, impl_value},
   scalar::Scalar,
@@ -49,6 +50,8 @@ impl_display!(TxOut);
 impl_from_retval!(TxOut);
 
 impl TxOut {
+  // Mirrors libblsct's build_tx_out parameter for parameter.
+  #[allow(clippy::too_many_arguments)]
   pub fn new<'a>(
     destination: &SubAddr,
     amount: u64,
@@ -69,6 +72,7 @@ impl TxOut {
         destination.value(),
         amount,
         memo_c_str.as_ptr(),
+        memo.len(),
         token_id.value(),
         output_type,
         min_stake,
@@ -133,10 +137,10 @@ impl BlsctSerde for TxOut {
     let buf = hex_to_malloced_buf(hex);
 
     match CStr::from_ptr(hex).to_str() {
-      Err(_) => err_bool(BLSCT_FAILURE),
+      Err(_) => blsct_err(BLSCT_FAILURE),
       Ok(str) => {
         let len = str.len() / 2;
-        succ(buf as *mut c_void, len)
+        blsct_succ(buf as *mut c_void, len)
       }
     }
   }
@@ -173,7 +177,7 @@ mod tests {
     let destination = {
       let view_key = ChildKey::random().unwrap().to_tx_key().to_view_key();
       let spending_pub_key = PublicKey::random().unwrap();
-      SubAddr::new(&view_key, &spending_pub_key, &sub_addr_id)
+      SubAddr::new(&view_key, &spending_pub_key, sub_addr_id)
     };
     let token_id = TokenId::default().unwrap();
 
@@ -217,6 +221,37 @@ mod tests {
     assert_eq!(&memo, "navio");
   }
 
+  fn tx_out_with_memo<'a>(memo: &str) -> Result<TxOut, Error<'a>> {
+    let destination = {
+      let view_key = ChildKey::random().unwrap().to_tx_key().to_view_key();
+      let spending_pub_key = PublicKey::random().unwrap();
+      SubAddr::new(&view_key, &spending_pub_key, &SubAddrId::new(0, 0))
+    };
+    TxOut::new(
+      &destination,
+      123,
+      memo,
+      &TokenId::default().unwrap(),
+      TxOutputType::Normal,
+      0,
+      false,
+      None,
+    )
+  }
+
+  #[test]
+  fn test_memo_with_multi_byte_characters_round_trips() {
+    init();
+    let memo = "navio \u{30ca}\u{30d3}\u{30aa} \u{1F680}";
+    assert_eq!(tx_out_with_memo(memo).unwrap().memo().unwrap(), memo);
+  }
+
+  #[test]
+  fn test_memo_with_nul_is_rejected() {
+    init();
+    assert!(tx_out_with_memo("nav\0io").is_err());
+  }
+
   #[test]
   fn test_token_id() {
     init();
@@ -250,7 +285,7 @@ mod tests {
     let sub_addr_id = SubAddrId::new(123, 456);
     let tx_out = gen_tx_out(&sub_addr_id);
     let b = tx_out.subtract_fee_from_amount();
-    assert_eq!(b, false);
+    assert!(!b);
   }
 
   #[test]

@@ -17,6 +17,10 @@ from blsct import (
   Scalar,
   set_chain,
   Signature,
+  build_stake_delegation_data_hex,
+  is_stake_delegation_data_hex,
+  parse_data_predicate_data,
+  parse_stake_delegation_owner_info,
   SubAddr,
   SubAddrId,
   TokenId,
@@ -27,6 +31,8 @@ from blsct import (
   ViewTag,
 )
 
+import blsct.blsct as blsct_swig
+import pytest
 import secrets
 
 def test_chain():
@@ -293,9 +299,15 @@ def test_tx():
   print(f"tx_out.blinding_key: {tx_out.get_blinding_key()}")
 
   # tx
+  # The fee is size-based, so the input over-funds it; the remainder is
+  # change, which libblsct only pays to an address someone owns.
+  change_addr = SubAddr.from_double_public_key(
+    DoublePublicKey.from_view_and_spend_keys(PublicKey(), PublicKey())
+  )
   ctx = CTx(
     [tx_in],
     [tx_out],
+    change_addr,
   )
 
   ctx_id = ctx.get_ctx_id()
@@ -354,7 +366,12 @@ def test_tx():
   # test amount recovery
   nonce = view_key.get_point().scalar_multiply(blinding_key)  
 
-  rp = ctx_outs.at(0).get_range_proof()
+  # Core shuffles the outputs, so find the payment by its ephemeral key
+  # (G * blinding_key) rather than assuming it comes first.
+  expected_ephemeral = Point.from_scalar(blinding_key).serialize()
+  payment = [o for o in ctx_outs if o.get_ephemeral_key().serialize() == expected_ephemeral]
+  assert len(payment) == 1
+  rp = payment[0].get_range_proof()
   req = AmountRecoveryReq(rp, nonce)
   amounts = RangeProof.recover_amounts([req])
 
@@ -362,3 +379,168 @@ def test_tx():
   assert amounts[0].is_succ == True
   assert amounts[0].amount == out_amount
   assert amounts[0].message == message
+
+def test_ctx_out_keys_are_points():
+  # The output keys are curve points (libblsct returns BlsctPoint). Read as
+  # a Scalar, printing or serializing one aborted the interpreter.
+  spend_pk = PublicKey()
+  dest = SubAddr.from_double_public_key(
+    DoublePublicKey.from_view_and_spend_keys(PublicKey(), spend_pk)
+  )
+  blinding_key = Scalar.random()
+  tx_in = TxIn(410000, 100, Scalar(12), TokenId(), OutPoint(CTxId.deserialize(secrets.token_hex(32))))
+  tx_out = TxOut(dest, 10000, 'keys', TokenId(), "Normal", 0, False, blinding_key)
+  change_addr = SubAddr.from_double_public_key(
+    DoublePublicKey.from_view_and_spend_keys(PublicKey(), PublicKey())
+  )
+  ctx_outs = CTx([tx_in], [tx_out], change_addr).get_ctx_outs()
+  outs = [ctx_outs.at(i) for i in range(ctx_outs.size())]
+
+  # Every output, payment, change and fee alike, yields serializable points.
+  for out in outs:
+    for key in (out.get_spending_key(), out.get_ephemeral_key(), out.get_blinding_key()):
+      assert isinstance(key, Point)
+      assert len(key.serialize()) == 96
+
+  # The payment output is the one whose ephemeral key is G * blinding_key;
+  # core sets its blinding key to spend_pk * blinding_key.
+  expected_ephemeral = Point.from_scalar(blinding_key).serialize()
+  payment = [o for o in outs if o.get_ephemeral_key().serialize() == expected_ephemeral]
+  assert len(payment) == 1
+  expected_blinding = spend_pk.get_point().scalar_multiply(blinding_key).serialize()
+  assert payment[0].get_blinding_key().serialize() == expected_blinding
+
+def _memo_dest():
+  return SubAddr.from_double_public_key(
+    DoublePublicKey.from_view_and_spend_keys(PublicKey(), PublicKey())
+  )
+
+def test_tx_out_memo_multi_byte_round_trips():
+  memo = 'navio ナビオ \U0001F680'
+  assert TxOut(_memo_dest(), 12345, memo).get_memo() == memo
+
+def test_tx_out_memo_with_nul_is_rejected():
+  with pytest.raises(ValueError):
+    TxOut(_memo_dest(), 12345, 'nav\x00io')
+
+STAKE = 1_000_000_000_000
+
+def test_stake_delegation_payload_opens_to_its_owner():
+  delegate_key = Point.random()
+  nonce = Point.random()
+  data_hex = build_stake_delegation_data_hex(STAKE, Scalar.random(), 'reward-address', delegate_key, nonce)
+
+  assert is_stake_delegation_data_hex(data_hex)
+  info = parse_stake_delegation_owner_info(data_hex, nonce)
+  assert info.delegate_key.serialize() == delegate_key.serialize()
+  assert info.reward_address == 'reward-address'
+
+  with pytest.raises(ValueError):
+    parse_stake_delegation_owner_info(data_hex, Point.random())
+
+def test_stake_delegation_rejects_other_data():
+  assert not is_stake_delegation_data_hex('00ff')
+  assert not is_stake_delegation_data_hex('')
+  with pytest.raises(ValueError):
+    is_stake_delegation_data_hex('abc')
+  with pytest.raises(ValueError):
+    parse_stake_delegation_owner_info('00ff', Point.random())
+  with pytest.raises(ValueError):
+    build_stake_delegation_data_hex(STAKE, Scalar.random(), '', Point.random(), Point.random())
+
+def test_set_unsigned_output_stake_delegation():
+  dest = _memo_dest()
+
+  def unsigned_output(output_type):
+    tx_out = TxOut(dest, STAKE, '', TokenId(), output_type, STAKE, False, Scalar.random())
+    rv = blsct_swig.build_unsigned_output(tx_out.value())
+    assert rv.result == 0
+    out = rv.value
+    blsct_swig.free_obj(rv)
+    return out
+
+  staked = unsigned_output("StakedCommitment")
+  normal = unsigned_output("Normal")
+  try:
+    delegate_key = Point.random().value()
+    assert blsct_swig.set_unsigned_output_stake_delegation(staked, dest.value(), delegate_key, 'reward-address')
+    assert not blsct_swig.set_unsigned_output_stake_delegation(normal, dest.value(), delegate_key, 'reward-address')
+    assert not blsct_swig.set_unsigned_output_stake_delegation(staked, _memo_dest().value(), delegate_key, 'reward-address')
+  finally:
+    blsct_swig.delete_unsigned_output(staked)
+    blsct_swig.delete_unsigned_output(normal)
+
+def test_cold_staking_end_to_end():
+  # Delegate a staked output, sign the transaction, then recover the
+  # delegation as the owner's syncing wallet would.
+  # A sub-address, as wallets receive on: its view key is v * D for the spend
+  # key D, so the owner's nonce works out to v times the output's blinding key.
+  view_key = Scalar.random()
+  dest = SubAddr(view_key, PublicKey(), SubAddrId(0, 0))
+  delegate_key = Point.random()
+  fee = 1000
+
+  tx_out = TxOut(dest, STAKE, '', TokenId(), "StakedCommitment", STAKE, False, Scalar.random())
+  rv = blsct_swig.build_unsigned_output(tx_out.value())
+  assert rv.result == 0
+  unsigned_out = rv.value
+  blsct_swig.free_obj(rv)
+  assert blsct_swig.set_unsigned_output_stake_delegation(
+    unsigned_out, dest.value(), delegate_key.value(), 'reward-address'
+  )
+  tx_in = TxIn(STAKE + fee, 100, Scalar(101), TokenId(), OutPoint(CTxId.deserialize('53' * 32)))
+  rv = blsct_swig.build_unsigned_input(tx_in.value())
+  assert rv.result == 0
+  unsigned_in = rv.value
+  blsct_swig.free_obj(rv)
+
+  unsigned_tx = blsct_swig.create_unsigned_transaction()
+  blsct_swig.add_unsigned_transaction_input(unsigned_tx, unsigned_in)
+  blsct_swig.add_unsigned_transaction_output(unsigned_tx, unsigned_out)
+  blsct_swig.set_unsigned_transaction_fee(unsigned_tx, fee)
+  rv = blsct_swig.sign_unsigned_transaction(unsigned_tx)
+  assert rv.result == 0
+  signed_hex = blsct_swig.cast_to_const_char_ptr(rv.value)
+  blsct_swig.free_obj(rv.value)
+  blsct_swig.free_obj(rv)
+  blsct_swig.delete_unsigned_transaction(unsigned_tx)
+
+  ctx_outs = CTx.deserialize(signed_hex).get_ctx_outs()
+  outs = [ctx_outs.at(i) for i in range(ctx_outs.size())]
+  def data_payload(out):
+    # The fee output carries a predicate too, but not a DATA one.
+    predicate_hex = out.get_vector_predicate()
+    if predicate_hex == '':
+      return None
+    try:
+      return parse_data_predicate_data(predicate_hex)
+    except ValueError:
+      return None
+
+  delegated = [(o, data_payload(o)) for o in outs if data_payload(o) is not None]
+  assert len(delegated) == 1
+  out, data_hex = delegated[0]
+  assert is_stake_delegation_data_hex(data_hex)
+  # A staked commitment's script: OP_STAKED_COMMITMENT, OP_PUSHDATA2 with the
+  # commitment's range proof, OP_TRUE. No other output has one.
+  staked_script = out.get_script_pub_key_hex()
+  assert staked_script.startswith('b94d') and staked_script.endswith('51')
+  assert [s for s in (o.get_script_pub_key_hex() for o in outs) if s.startswith('b9')] == [staked_script]
+
+  # The owner's nonce: the output's blinding key times the view key.
+  nonce = PublicKey.from_point(out.get_blinding_key()).generate_nonce(view_key).get_point()
+  info = parse_stake_delegation_owner_info(data_hex, nonce)
+  assert info.delegate_key.serialize() == delegate_key.serialize()
+  assert info.reward_address == 'reward-address'
+
+def test_parse_data_predicate_data_refuses_other_predicates():
+  # A non-DATA predicate: the mint-token predicate of the C API.
+  rv = blsct_swig.build_mint_token_predicate(PublicKey().value(), 5)
+  assert rv.result == 0
+  predicate_hex = blsct_swig.serialize_vector_predicate(
+    blsct_swig.cast_to_vector_predicate(rv.value), rv.value_size
+  )
+  blsct_swig.free_obj(rv.value)
+  blsct_swig.free_obj(rv)
+  with pytest.raises(ValueError):
+    parse_data_predicate_data(predicate_hex)

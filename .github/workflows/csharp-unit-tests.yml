@@ -7,12 +7,16 @@ on:
       - '**'
     paths:
       - 'ffi/blsct.i'
+      - '.github/actions/libblsct/**'
+      - 'ffi/navio-core.sha'
       - 'ffi/csharp/**'
       - '.github/workflows/csharp-unit-tests.yml'
       - '.github/workflows/csharp-build-native.yml'
   pull_request:
     paths:
       - 'ffi/blsct.i'
+      - '.github/actions/libblsct/**'
+      - 'ffi/navio-core.sha'
       - 'ffi/csharp/**'
       - '.github/workflows/csharp-unit-tests.yml'
       - '.github/workflows/csharp-build-native.yml'
@@ -21,23 +25,14 @@ on:
 jobs:
   build-native:
     strategy:
+      fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-24.04
-            artifact-suffix: ubuntu-24.04
-            host: ''
-          - os: macos-15
-            artifact-suffix: macos-15
-            host: ''
-          - os: ubuntu-24.04
-            artifact-suffix: windows-2022
-            host: x86_64-w64-mingw32
+        os: ['ubuntu-24.04', 'macos-15', 'windows-2022']
 
     uses: ./.github/workflows/csharp-build-native.yml
     with:
       runner: ${{ matrix.os }}
-      artifact-name: libblsct-${{ matrix.artifact-suffix }}
-      host: ${{ matrix.host }}
+      artifact-name: libblsct-${{ matrix.os }}
 
   csharp-run-unit-tests:
     needs: build-native
@@ -45,6 +40,8 @@ jobs:
       run:
         shell: bash
     strategy:
+      # Each OS is its own verdict: one red leg must not cancel the others.
+      fail-fast: false
       matrix:
         os: ['ubuntu-24.04', 'macos-15', 'windows-2022']
 
@@ -55,15 +52,18 @@ jobs:
         with:
           clean: true
 
-      - name: Install system dependencies (Unix)
-        if: runner.os != 'Windows'
+      # NavioBlsct.csproj runs swig to generate the C# side of the binding.
+      - name: Install SWIG
         run: |
-          if command -v apt-get >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y swig autoconf automake libtool pkg-config build-essential libgmp-dev
+          if [[ $RUNNER_OS == 'Linux' ]]; then
+            # apt's SWIG (4.2.0) predates the C# typemaps blsct.i needs.
+            pipx install 'swig>=4.3'
+          elif [[ $RUNNER_OS == 'macOS' ]]; then
+            brew install swig
           else
-            brew install swig autoconf automake libtool pkg-config gmp
+            choco install swig --no-progress -y
           fi
+          swig -version
 
       - name: Download native library
         uses: actions/download-artifact@v8

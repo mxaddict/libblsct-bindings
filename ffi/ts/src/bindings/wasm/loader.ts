@@ -141,8 +141,9 @@ export interface BlsctWasmModule {
   _set_tx_out_transcript_v2(txOut: number, transcriptV2: number): void;
   _get_tx_out_transcript_v2(txOut: number): number;
   _build_tx_in(amount: bigint, gamma: number, spendingKey: number, tokenId: number, outPoint: number, stakedCommitment: boolean, rbf: boolean): number;
-  _build_tx_out(dest: number, amount: bigint, memo: number, tokenId: number, outputType: number, minStake: bigint, subtractFeeFromAmount: boolean, blindingKey: number): number;
+  _build_tx_out(dest: number, amount: bigint, memo: number, memoLen: number, tokenId: number, outputType: number, minStake: bigint, subtractFeeFromAmount: boolean, blindingKey: number): number;
   _build_ctx(txIns: number, txOuts: number): number;
+  _build_ctx_with_change(txIns: number, txOuts: number, changeAddr: number): number;
   _get_ctx_id(ctx: number): number;
   _get_ctx_ins(ctx: number): number;
   _get_ctx_outs(ctx: number): number;
@@ -173,6 +174,7 @@ export interface BlsctWasmModule {
   // CTxOut accessors
   _get_ctx_out_value(ctxOut: number): bigint;
   _get_ctx_out_script_pub_key(ctxOut: number): number;
+  _get_ctx_out_script_pub_key_hex(ctxOut: number): number;
   _get_ctx_out_token_id(ctxOut: number): number;
   _get_ctx_out_vector_predicate(ctxOut: number): number;
   _get_ctx_out_spending_key(ctxOut: number): number;
@@ -195,6 +197,7 @@ export interface BlsctWasmModule {
   _get_mint_nft_predicate_public_key(predicate: number, objSize: number): number;
   _get_mint_nft_predicate_nft_id(predicate: number, objSize: number): bigint;
   _get_mint_nft_predicate_metadata(predicate: number, objSize: number): number;
+  _get_data_predicate_data(predicate: number, objSize: number): number;
   
   // TxIn accessors
   _get_tx_in_amount(txIn: number): bigint;
@@ -239,6 +242,13 @@ export interface BlsctWasmModule {
   _serialize_unsigned_transaction(unsignedTx: number): number;
   _deserialize_unsigned_transaction(hex: number): number;
   _sign_unsigned_transaction(unsignedTx: number): number;
+
+  // Stake delegation
+  _set_unsigned_output_stake_delegation(unsignedOutput: number, dest: number, delegateKey: number, rewardAddress: number): boolean;
+  _is_stake_delegation_data(data: number, dataLen: number): boolean;
+  _build_stake_delegation_data(value: bigint, gamma: number, rewardAddress: number, delegateKey: number, nonce: number): number;
+  _recover_stake_delegation_owner_info(data: number, dataLen: number, nonce: number): number;
+  _delete_stake_delegation_owner_info(ownerInfo: number): void;
   
   // Signature operations
   _sign_message(privKey: number, msg: number): number;

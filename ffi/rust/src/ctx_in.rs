@@ -60,8 +60,7 @@ mod tests {
   fn get_ctx_in() -> CTxIn {
     let ctx = gen_ctx();
     let ctx_ins = ctx.get_ctx_ins();
-    let ctx_in = ctx_ins.get_ctx_in_at(0).unwrap();
-    ctx_in
+    ctx_ins.get_ctx_in_at(0).unwrap()
   }
 
   #[test]

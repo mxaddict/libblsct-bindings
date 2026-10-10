@@ -1,21 +1,20 @@
 use crate::{
   blsct_obj::{self, BlsctObj},
   ffi::{
-    are_ctx_out_equal, get_ctx_out_blinding_key, get_ctx_out_ephemeral_key,
-    get_ctx_out_range_proof, get_ctx_out_script_pub_key, get_ctx_out_spending_key,
-    get_ctx_out_token_id, get_ctx_out_value, get_ctx_out_vector_predicate, get_ctx_out_view_tag,
-    BlsctPoint, BlsctRangeProof, BlsctRetVal, BlsctScalar, BlsctScript, BlsctTokenId,
-    BlsctVectorPredicate,
+    are_ctx_out_equal, free_obj, get_ctx_out_blinding_key, get_ctx_out_ephemeral_key,
+    get_ctx_out_range_proof, get_ctx_out_script_pub_key, get_ctx_out_script_pub_key_hex,
+    get_ctx_out_spending_key, get_ctx_out_token_id, get_ctx_out_value,
+    get_ctx_out_vector_predicate, get_ctx_out_view_tag, BlsctPoint, BlsctRangeProof, BlsctRetVal,
+    BlsctScript, BlsctTokenId, BlsctVectorPredicate,
   },
   macros::impl_value_raw_const_obj,
   point::Point,
   range_proof::RangeProof,
-  scalar::Scalar,
   script::Script,
   token_id::TokenId,
   vector_predicate::VectorPredicate,
 };
-use std::ffi::c_void;
+use std::ffi::{c_void, CStr};
 
 #[derive(Debug)]
 pub struct CTxOut {
@@ -32,6 +31,21 @@ impl CTxOut {
     BlsctObj::<Script, BlsctScript>::from_c_obj(c_obj as *mut BlsctScript).into()
   }
 
+  /// The whole scriptPubKey in hex. Unlike [`CTxOut::script_pub_key`], which
+  /// holds a fixed-size script, it is not cut off, so a staked commitment's
+  /// script (`OP_STAKED_COMMITMENT` ... `OP_TRUE`) reads in full.
+  pub fn script_pub_key_hex(&self) -> String {
+    let c_str = unsafe { get_ctx_out_script_pub_key_hex(self.value()) };
+    if c_str.is_null() {
+      return String::new();
+    }
+    let hex = unsafe { CStr::from_ptr(c_str) }
+      .to_string_lossy()
+      .into_owned();
+    unsafe { free_obj(c_str as *mut c_void) };
+    hex
+  }
+
   pub fn token_id(&self) -> TokenId {
     let c_obj = unsafe { get_ctx_out_token_id(self.value()) };
     BlsctObj::<TokenId, BlsctTokenId>::from_c_obj(c_obj as *mut BlsctTokenId).into()
@@ -43,9 +57,9 @@ impl CTxOut {
     Ok(obj.into())
   }
 
-  pub fn blsct_data_spending_key(&self) -> Scalar {
+  pub fn blsct_data_spending_key(&self) -> Point {
     let c_obj = unsafe { get_ctx_out_spending_key(self.value()) };
-    BlsctObj::<Scalar, BlsctScalar>::from_c_obj(c_obj as *mut BlsctScalar).into()
+    BlsctObj::<Point, BlsctPoint>::from_c_obj(c_obj as *mut BlsctPoint).into()
   }
 
   pub fn blsct_data_ephemeral_key(&self) -> Point {
@@ -53,9 +67,9 @@ impl CTxOut {
     BlsctObj::<Point, BlsctPoint>::from_c_obj(c_obj as *mut BlsctPoint).into()
   }
 
-  pub fn blsct_data_blinding_key(&self) -> Scalar {
+  pub fn blsct_data_blinding_key(&self) -> Point {
     let c_obj = unsafe { get_ctx_out_blinding_key(self.value()) };
-    BlsctObj::<Scalar, BlsctScalar>::from_c_obj(c_obj as *mut BlsctScalar).into()
+    BlsctObj::<Point, BlsctPoint>::from_c_obj(c_obj as *mut BlsctPoint).into()
   }
 
   pub fn blsct_data_range_proof(&self) -> Result<RangeProof, blsct_obj::Error<'_>> {
@@ -93,8 +107,7 @@ mod tests {
   fn get_ctx_out() -> CTxOut {
     let ctx = gen_ctx();
     let ctx_outs = ctx.get_ctx_outs();
-    let ctx_out = ctx_outs.at(0).unwrap();
-    ctx_out
+    ctx_outs.at(0).unwrap()
   }
 
   #[test]
@@ -103,6 +116,20 @@ mod tests {
     let ctx_out = get_ctx_out();
     let out_value = ctx_out.out_value();
     println!("OutValue: {out_value}");
+  }
+
+  #[test]
+  fn test_script_pub_key_hex() {
+    init();
+    // Keep the transaction alive: its outputs point into it.
+    let ctx = crate::test_util::gen_ctx();
+    let outs = ctx.get_ctx_outs();
+    let mut scripts: Vec<String> = (0..outs.len())
+      .map(|i| outs.at(i).unwrap().script_pub_key_hex())
+      .collect();
+    scripts.sort();
+    // Payment and change pay to OP_TRUE; the fee output is OP_RETURN.
+    assert_eq!(scripts, vec!["51", "51", "6a"]);
   }
 
   #[test]

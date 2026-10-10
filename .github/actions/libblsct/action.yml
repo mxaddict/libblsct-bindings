@@ -1,0 +1,70 @@
+name: 'Build or restore libblsct'
+description: >
+  Provide navio-core's standalone libblsct static archives (blsct, blst,
+  univalue) for the commit pinned in ffi/navio-core.sha, built once per OS and
+  architecture and restored from the Actions cache afterwards, so every
+  binding links the same build instead of compiling navio-core itself. Sets
+  BLSCT_PREBUILT_DIR for later steps; the binding builds read it.
+
+outputs:
+  prebuilt-dir:
+    description: Directory holding the archives and a navio-core.sha marker
+    value: ${{ steps.dirs.outputs.prebuilt }}
+
+runs:
+  using: composite
+  steps:
+    - id: dirs
+      shell: bash
+      run: |
+        echo "sha=$(tr -d '[:space:]' < ffi/navio-core.sha)" >> "$GITHUB_OUTPUT"
+        # The runner image (ubuntu24, macos15, win22, ...): archives built on a
+        # newer image can need a newer libc than an older one provides.
+        echo "image=${ImageOS:-unknown}" >> "$GITHUB_OUTPUT"
+        echo "prebuilt=$RUNNER_TEMP/libblsct-prebuilt" >> "$GITHUB_OUTPUT"
+        echo "src=$RUNNER_TEMP/navio-core-libblsct" >> "$GITHUB_OUTPUT"
+
+    # Keyed on everything that changes the archives: the platform and runner
+    # image, the pinned commit and this action, which holds the build flags.
+    - id: cache
+      uses: actions/cache@v5
+      with:
+        path: ${{ steps.dirs.outputs.prebuilt }}
+        key: libblsct-${{ steps.dirs.outputs.image }}-${{ runner.arch }}-${{ steps.dirs.outputs.sha }}-${{ hashFiles('.github/actions/libblsct/action.yml') }}
+
+    - if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      env:
+        SHA: ${{ steps.dirs.outputs.sha }}
+        SRC: ${{ steps.dirs.outputs.src }}
+        OUT: ${{ steps.dirs.outputs.prebuilt }}
+      run: |
+        set -euo pipefail
+        # On Windows the runner paths are in Windows form; use POSIX
+        # forms for the shell tools. CMake accepts either.
+        if command -v cygpath >/dev/null; then SRC="$(cygpath -u "$SRC")"; OUT="$(cygpath -u "$OUT")"; fi
+        git init -q "$SRC"
+        git -C "$SRC" fetch -q --depth 1 https://github.com/nav-io/navio-core "$SHA"
+        git -C "$SRC" checkout -q FETCH_HEAD
+        # The flags every binding builds libblsct with.
+        cmake -S "$SRC" -B "$SRC/build" \
+          -DBUILD_LIBBLSCT_ONLY=ON \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_TESTS=OFF \
+          -DBUILD_BENCH=OFF \
+          -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        jobs="$(nproc 2>/dev/null || sysctl -n hw.ncpu)"
+        cmake --build "$SRC/build" --config Release --target blsct blst univalue -j "$jobs"
+        mkdir -p "$OUT"
+        # Visual Studio generators add a per-configuration directory and name
+        # archives <target>.lib; everything else writes lib<target>.a.
+        for lib in blsct blst univalue; do
+          f="$(find "$SRC/build" \( -name "lib$lib.a" -o -name "$lib.lib" \) -not -path '*/CMakeFiles/*' | head -1)"
+          [[ -n "$f" ]] || { echo "No $lib archive under $SRC/build" >&2; exit 1; }
+          cp "$f" "$OUT/"
+        done
+        echo "$SHA" > "$OUT/navio-core.sha"
+        ls -l "$OUT"
+
+    - shell: bash
+      run: echo "BLSCT_PREBUILT_DIR=${{ steps.dirs.outputs.prebuilt }}" >> "$GITHUB_ENV"

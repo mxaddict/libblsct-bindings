@@ -112,6 +112,10 @@ export const buildCTx = (txIns: any, txOuts: any): BlsctCTxRetVal => {
   return blsct.build_ctx(txIns, txOuts)
 }
 
+export const buildCTxWithChange = (txIns: any, txOuts: any, changeAddr: any): BlsctCTxRetVal => {
+  return blsct.build_ctx_with_change(txIns, txOuts, changeAddr)
+}
+
 export const createTxInVec = (): any => {
   return blsct.create_tx_in_vec()
 }
@@ -212,6 +216,9 @@ export const getCTxOutValue = (obj: any): bigint => {
 
 export const getCTxOutScriptPubkey = (obj: any): any => {
   return blsct.get_ctx_out_script_pub_key(obj)
+}
+export const getCTxOutScriptPubKeyHex = (obj: any): string => {
+  return blsct.get_ctx_out_script_pub_key_hex(obj) ?? ''
 }
 
 export const getCTxOutTokenId = (obj: any): any => {
@@ -971,6 +978,9 @@ export const getMintNftPredicateNftId = (predicate: any, size: number): bigint =
 export const getMintNftPredicateMetadata = (predicate: any, size: number): any => {
   return blsct.get_mint_nft_predicate_metadata(predicate, size)
 }
+export const getDataPredicateData = (predicate: any, size: number): BlsctRetVal => {
+  return blsct.get_data_predicate_data(predicate, size)
+}
 
 // unsigned input/output/transaction helpers
 export const buildUnsignedInput = (txIn: any): BlsctRetVal => {
@@ -1072,6 +1082,40 @@ export const deserializeUnsignedTransaction = (hex: string): BlsctRetVal => {
 }
 export const signUnsignedTransaction = (unsignedTx: any): BlsctRetVal => {
   return blsct.sign_unsigned_transaction(unsignedTx)
+}
+
+// stake delegation
+export const setUnsignedOutputStakeDelegation = (
+  unsignedOutput: any,
+  dest: any,
+  delegateKey: any,
+  rewardAddress: string,
+): boolean => {
+  return blsct.set_unsigned_output_stake_delegation(unsignedOutput, dest, delegateKey, rewardAddress)
+}
+export const isStakeDelegationData = (data: any, dataLen: number): boolean => {
+  return blsct.is_stake_delegation_data(data, dataLen)
+}
+export const buildStakeDelegationData = (
+  value: number,
+  gamma: any,
+  rewardAddress: string,
+  delegateKey: any,
+  nonce: any,
+): BlsctRetVal => {
+  return blsct.build_stake_delegation_data(value, gamma, rewardAddress, delegateKey, nonce)
+}
+export const recoverStakeDelegationOwnerInfo = (data: any, dataLen: number, nonce: any): BlsctRetVal => {
+  return blsct.recover_stake_delegation_owner_info(data, dataLen, nonce)
+}
+export const deleteStakeDelegationOwnerInfo = (ownerInfo: any): void => {
+  blsct.delete_stake_delegation_owner_info(ownerInfo)
+}
+export const getStakeDelegationOwnerInfoDelegateKey = (ownerInfo: any): any => {
+  return blsct.get_stake_delegation_owner_info_delegate_key(ownerInfo)
+}
+export const getStakeDelegationOwnerInfoRewardAddress = (ownerInfo: any): string => {
+  return blsct.get_stake_delegation_owner_info_reward_address(ownerInfo)
 }
 
 // view tag

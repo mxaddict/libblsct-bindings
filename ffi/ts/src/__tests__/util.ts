@@ -85,6 +85,12 @@ export const genCTx = (
     false,
     blindingKey,
   )
-  return CTx.generate([txIn], [txOut])
+  // The fee is size-based, so the input over-funds it; the remainder is
+  // change, which libblsct will only pay to an address someone owns.
+  return CTx.generate([txIn], [txOut], changeAddr())
 }
+
+/** A fresh change destination for test transactions that over-fund the fee. */
+export const changeAddr = (): SubAddr =>
+  SubAddr.fromDoublePublicKey(DoublePublicKey.fromViewAndSpendKeys(PublicKey.random(), PublicKey.random()))
 

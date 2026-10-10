@@ -63,6 +63,7 @@
     "scripts",
     "swig",
     "binding.gyp",
+    "navio-core.sha",
     "tsconfig.json"
   ],
   "devDependencies": {

@@ -6,6 +6,7 @@ import {
   getCTxOutEphemeralKey,
   getCTxOutRangeProof,
   getCTxOutScriptPubkey,
+  getCTxOutScriptPubKeyHex,
   getCTxOutSpendingKey,
   getCTxOutTokenId,
   getCTxOutValue,
@@ -17,7 +18,6 @@ import {
 
 import { Point } from './point'
 import { RangeProof } from './rangeProof'
-import { Scalar } from './scalar'
 import { Script } from './script'
 import { TokenId } from './tokenId'
 
@@ -48,6 +48,16 @@ export class CTxOut {
     return Script.fromObj(obj)
   }
 
+  /** Returns the whole `scriptPubKey` of the output in hex. Unlike
+   * {@link getScriptPubKey}, which holds a fixed-size script, it is not cut
+   * off, so a staked commitment's script (`OP_STAKED_COMMITMENT` ...
+   * `OP_TRUE`) reads in full.
+   * @returns The `scriptPubKey` in hex, empty when the output has none.
+   */
+  getScriptPubKeyHex(): string {
+    return getCTxOutScriptPubKeyHex(this.obj)
+  }
+
   /** Returns the token ID associated with the transaction output.
    * @returns The token ID of the output.
    */
@@ -76,11 +86,11 @@ export class CTxOut {
   }
 
   /** Returns the spending key associated with the transaction output.
-   * @returns The spending key of the output.
+   * @returns The spending key of the output, a public point.
    */
-  getSpendingKey(): Scalar {
+  getSpendingKey(): Point {
     const obj = getCTxOutSpendingKey(this.obj)
-    return Scalar.fromObj(obj)
+    return Point.fromObj(obj)
   }
   
   /** Returns the ephemeral key associated with the transaction output.
@@ -92,11 +102,11 @@ export class CTxOut {
   }
 
   /** Returns the blinding key associated with the transaction output.
-   * @returns The blinding key of the output.
+   * @returns The blinding key of the output, a public point.
    */
-  getBlindingKey(): Scalar {
+  getBlindingKey(): Point {
     const obj = getCTxOutBlindingKey(this.obj)
-    return Scalar.fromObj(obj)
+    return Point.fromObj(obj)
   }
 
   /** Returns the range proof associated with the transaction output.

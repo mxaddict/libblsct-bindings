@@ -2,7 +2,6 @@ from . import blsct
 from .managed_obj import ManagedObj
 from .point import Point
 from .range_proof import RangeProof
-from .scalar import Scalar
 from .script import Script
 from .serializable import Serializable
 from .token_id import TokenId
@@ -27,6 +26,14 @@ class CTxOut(ManagedObj, Serializable):
     obj = blsct.get_ctx_out_script_pub_key(self.value())
     return Script.from_obj(obj)
 
+  def get_script_pub_key_hex(self) -> str:
+    """
+    Get the whole scriptPubKey in hex. Unlike get_script_pub_key, which holds
+    a fixed-size script, it is not cut off, so a staked commitment's script
+    (OP_STAKED_COMMITMENT ... OP_TRUE) reads in full.
+    """
+    return blsct.get_ctx_out_script_pub_key_hex(self.value()) or ""
+
   def get_token_id(self) -> 'TokenId':
     """Get the token ID of the transaction output."""
     obj = blsct.get_ctx_out_token_id(self.value())
@@ -38,7 +45,7 @@ class CTxOut(ManagedObj, Serializable):
     if rv.result != 0:
       blsct.free_obj(rv)
       raise ValueError(f"Failed to get vector predicate. Error code = {rv.result}")
-    if rv.value_size != 0:
+    if rv.value_size == 0:
       blsct.free_obj(rv)
       return ""
     buf = blsct.cast_to_uint8_t_ptr(rv.value)
@@ -46,20 +53,20 @@ class CTxOut(ManagedObj, Serializable):
     blsct.free_obj(rv)
     return hex 
 
-  def get_spending_key(self) -> Scalar:
-    """Get the spending key of the transaction output."""
+  def get_spending_key(self) -> Point:
+    """Get the spending key of the transaction output, a public point."""
     obj = blsct.get_ctx_out_spending_key(self.value())
-    return Scalar.from_obj(obj)
+    return Point.from_obj(obj)
 
   def get_ephemeral_key(self) -> Point:
     """Get the ephemeral key of the transaction output."""
     obj = blsct.get_ctx_out_ephemeral_key(self.value())
     return Point.from_obj(obj)
 
-  def get_blinding_key(self) -> Scalar:
-    """Get the blinding key of the transaction output."""
+  def get_blinding_key(self) -> Point:
+    """Get the blinding key of the transaction output, a public point."""
     obj = blsct.get_ctx_out_blinding_key(self.value())
-    return Scalar.from_obj(obj)
+    return Point.from_obj(obj)
 
   def get_range_proof(self) -> RangeProof:
     """Get the range proof of the transaction output."""
